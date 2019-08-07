@@ -1,0 +1,1 @@
+alias mycc="cc -std=c99 -Wall -pedantic -Werror"
