@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    if(argc != 4)
+    if(argc <= 4)
         {
                 fprintf(stderr, "%s: program expected 3 arguments, but instead received %d\n",
 					argv[0], argc-1);
