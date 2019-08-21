@@ -45,11 +45,11 @@
             {
                 result[i+j+already] = newword[j];
             }
-            already+=j-1;
-            i+=nn-1;
+            already+=(nn-oo);
+            i+=oo-1;
         }
     }
-
+    result[ss+matchCount*(nn-oo)] ='\0';
     printf("%s \n",result);
     
  }
