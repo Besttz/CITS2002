@@ -98,7 +98,7 @@ void parse_tracefile(char program[], char tracefile[])
             ;   //  JUST THE END OF THE CURRENT PROCESS'S EVENTS
         }
         else {
-            printf("%s: line %i of '%s' is unrecognized",
+            printf("%s: line %i of '%s' is unrecognized \n",
                         program, lc, tracefile);
             exit(EXIT_FAILURE);
         }
