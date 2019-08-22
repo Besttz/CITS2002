@@ -3,8 +3,8 @@
 #include <string.h>
 
 /* CITS2002 Project 1 2019
-   Name(s):             student-name1 (, student-name2)
-   Student number(s):   student-number-1 (, student-number-2)
+   Name(s):             Tommy Zhang, Zhenyu Yang
+   Student number(s):   22181467 22374571
  */
 
 
@@ -21,7 +21,8 @@
 #define MAX_DEVICES             4
 #define MAX_DEVICE_NAME         20
 #define MAX_PROCESSES           50
-#define MAX_PROCESS_EVENTS      1000
+// DO NOT USE THIS - #define MAX_PROCESS_EVENTS      1000
+#define MAX_EVENTS PER_PROCESS	100
 
 #define TIME_CONTEXT_SWITCH     5
 #define TIME_ACQUIRE_BUS        5
