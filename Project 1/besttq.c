@@ -41,7 +41,15 @@ int total_process_completion_time       = 0;
 #define CHAR_COMMENT            '#'
 #define MAXWORD                 20
 
-void parse_tracefile(char program[], char tracefile[])
+//  ----------------------------------------------------------------------
+//  THIS IS DATA STRUCTURE FOR STORING I/O DEVICES
+int devCount = 0;
+int devSpeed[MAX_DEVICES]; 
+char devNames[MAX_DEVICES][MAX_DEVICE_NAME];
+//  Need to use strcpy(strs[0], devNames) to modify
+//  One Device is represented by a single index
+//  Using devSpeed[i] devNames[i] to get preporty
+void parse_tracefile (char program[], char tracefile[])
 {
 //  ATTEMPT TO OPEN OUR TRACEFILE, REPORTING AN ERROR IF WE CAN'T
     FILE *fp    = fopen(tracefile, "r");
@@ -75,11 +83,15 @@ void parse_tracefile(char program[], char tracefile[])
         }
 //  LOOK FOR LINES DEFINING DEVICES, PROCESSES, AND PROCESS EVENTS
         if(nwords == 4 && strcmp(word0, "device") == 0) {
-            ;   // FOUND A DEVICE DEFINITION, WE'LL NEED TO STORE THIS SOMEWHERE
+            strcpy(devNames[devCount],word1);   // FOUND A DEVICE DEFINITION
+            devSpeed[devCount++] = atoi(word2)*0.000001;
+            printf("Added Device NO.%i %s, Speed is %i b/μs\n",
+            devCount, devNames[devCount-1], devSpeed[devCount-1]);
         }
 
         else if(nwords == 1 && strcmp(word0, "reboot") == 0) {
-            ;   // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
+            printf("Totally %i Devices Added \n",devCount);   
+            // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
         }
 
         else if(nwords == 4 && strcmp(word0, "process") == 0) {
@@ -114,6 +126,7 @@ void parse_tracefile(char program[], char tracefile[])
 //  SIMULATE THE JOB-MIX FROM THE TRACEFILE, FOR THE GIVEN TIME-QUANTUM
 void simulate_job_mix(int time_quantum)
 {
+    // int systemTime = 0;
     printf("running simulate_job_mix( time_quantum = %i usecs )\n",
                 time_quantum);
 }
