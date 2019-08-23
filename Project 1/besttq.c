@@ -49,6 +49,8 @@ char devNames[MAX_DEVICES][MAX_DEVICE_NAME];
 //  Need to use strcpy(strs[0], devNames) to modify
 //  One Device is represented by a single index
 //  Using devSpeed[i] devNames[i] to get preporty
+//  ----------------------------------------------------------------------
+
 void parse_tracefile (char program[], char tracefile[])
 {
 //  ATTEMPT TO OPEN OUR TRACEFILE, REPORTING AN ERROR IF WE CAN'T
@@ -83,14 +85,29 @@ void parse_tracefile (char program[], char tracefile[])
         }
 //  LOOK FOR LINES DEFINING DEVICES, PROCESSES, AND PROCESS EVENTS
         if(nwords == 4 && strcmp(word0, "device") == 0) {
-            strcpy(devNames[devCount],word1);   // FOUND A DEVICE DEFINITION
-            devSpeed[devCount++] = atoi(word2)*0.000001;
-            printf("Added Device NO.%i %s, Speed is %i b/μs\n",
-            devCount, devNames[devCount-1], devSpeed[devCount-1]);
+            // FOUND A DEVICE, WILL CHECK THE SPEED TO CALCULATE PRIOROTY
+            // AND PUT IT IN THE RIGHT POSITION IN THE DEVICE ARRAY
+            int newSpeed = atoi(word2)*0.000001;
+            int newID = 0;
+            // Compare with current device list
+            for (; newID < devCount; newID++) 
+                if (devSpeed[newID]<newSpeed) break;
+            // Put all the devices slower than this devide one position lower
+            for (int i = devCount-1; i >= newID; i--)
+            {
+                devSpeed[i+1]=devSpeed[i];
+                strcpy(devNames[i+1],devNames[i]);
+            }
+            // Put the new device in, and increse the count
+            strcpy(devNames[newID],word1);    
+            devSpeed[newID] = newSpeed;
+            devCount++;
         }
 
         else if(nwords == 1 && strcmp(word0, "reboot") == 0) {
-            printf("Totally %i Devices Added \n",devCount);   
+            printf("Totally %i Devices Added \n",devCount); 
+            for (int i = 0; i < devCount; i++) printf(
+                "%i: %s, Speed is %i b/μs\n",i,devNames[i], devSpeed[i]); 
             // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
         }
 
