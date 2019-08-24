@@ -115,9 +115,10 @@ void parse_tracefile (char program[], char tracefile[])
         }
 
         else if(nwords == 1 && strcmp(word0, "reboot") == 0) {
-            printf("Totally %i Devices Added \n",devCount); 
+            printf("Totally %i Devices Added \n",devCount); // TEST PRINT
             for (int i = 0; i < devCount; i++) printf(
                 "    %i: %s, Speed is %i b/μs\n",i,devNames[i], devSpeed[i]); 
+                // TEST PRINT
             // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
         }
 
@@ -126,6 +127,7 @@ void parse_tracefile (char program[], char tracefile[])
             // FOUND THE START OF A PROCESS'S EVENTS, STORE BEGIN TIME
             foundNewProcess = 1;
             printf("Process %i Added, Start at %i\n",pCount,pStartTime[pCount]);
+            // TEST PRINT
         }
 
         else if(nwords == 4 && strcmp(word0, "i/o") == 0) {
@@ -151,7 +153,7 @@ void parse_tracefile (char program[], char tracefile[])
             printf("    Event %i Added, at %i time use %i %s for %iμs %ibyte.\n",
                     pEventNums[pCount],pEventTime[pCount][currentEvent],i,
                     currentDevice,pEventDuration[pCount][currentEvent],
-                    atoi(word3));
+                    atoi(word3)); // TEST PRINT
             pEventNums[pCount]++;
         }
 
@@ -159,6 +161,7 @@ void parse_tracefile (char program[], char tracefile[])
             pEndTime[pCount]=atoi(word1);   
             //  PRESUMABLY THE LAST EVENT WE'LL SEE FOR THE CURRENT PROCESS
             printf("Process %i Exit at %i\n",pCount, pEndTime[pCount]);
+            // TEST PRINT
         }
 
         else if(nwords == 1 && strcmp(word0, "}") == 0) {
