@@ -22,7 +22,7 @@
 #define MAX_DEVICE_NAME         20
 #define MAX_PROCESSES           50
 // DO NOT USE THIS - #define MAX_PROCESS_EVENTS      1000
-#define MAX_EVENTS PER_PROCESS	100
+#define MAX_EVENTS_PER_PROCESS	100
 
 #define TIME_CONTEXT_SWITCH     5
 #define TIME_ACQUIRE_BUS        5
@@ -49,6 +49,16 @@ char devNames[MAX_DEVICES][MAX_DEVICE_NAME];
 //  Need to use strcpy(strs[0], devNames) to modify
 //  One Device is represented by a single index
 //  Using devSpeed[i] devNames[i] to get preporty
+//  ----------------------------------------------------------------------
+//  THIS IS DATA STRUCTURE FOR STORING PROCESSES
+int pCount = 0;
+int pStartTime[MAX_PROCESSES]; //The Start time of a process
+int pEndTime[MAX_PROCESSES]; //The exit time of a process
+int pEventNums[MAX_PROCESSES];//The total number of event of a process
+int pEventTime[MAX_PROCESSES][MAX_EVENTS_PER_PROCESS];//The start time of event
+int pEventDevice[MAX_PROCESSES][MAX_EVENTS_PER_PROCESS];//The asked device ID
+int pEventDuration[MAX_PROCESSES][MAX_EVENTS_PER_PROCESS];//The time event need
+int foundNewProcess = 0;
 //  ----------------------------------------------------------------------
 
 void parse_tracefile (char program[], char tracefile[])
@@ -107,24 +117,52 @@ void parse_tracefile (char program[], char tracefile[])
         else if(nwords == 1 && strcmp(word0, "reboot") == 0) {
             printf("Totally %i Devices Added \n",devCount); 
             for (int i = 0; i < devCount; i++) printf(
-                "%i: %s, Speed is %i b/μs\n",i,devNames[i], devSpeed[i]); 
+                "    %i: %s, Speed is %i b/μs\n",i,devNames[i], devSpeed[i]); 
             // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
         }
 
         else if(nwords == 4 && strcmp(word0, "process") == 0) {
-            ;   // FOUND THE START OF A PROCESS'S EVENTS, STORE THIS SOMEWHERE
+            pStartTime[pCount]=atoi(word2);   
+            // FOUND THE START OF A PROCESS'S EVENTS, STORE BEGIN TIME
+            foundNewProcess = 1;
+            printf("Process %i Added, Start at %i\n",pCount,pStartTime[pCount]);
         }
 
         else if(nwords == 4 && strcmp(word0, "i/o") == 0) {
-            ;   //  AN I/O EVENT FOR THE CURRENT PROCESS, STORE THIS SOMEWHERE
+            if (foundNewProcess) { //Check if the pEventNums intilized
+                pEventNums[pCount] = 0;
+                foundNewProcess = 0;
+            }
+            int currentEvent = pEventNums[pCount]; // Get current event ID
+            pEventTime[pCount][currentEvent] = atoi(word1); //Set start time
+            char currentDevice[MAX_DEVICE_NAME]; // A String for device
+            strcpy(currentDevice,word2);//Get current device
+            int i = 0;
+            for (; i < devCount; i++) //Find the device ID
+            {
+                if (strcmp(devNames[i],currentDevice)==0)
+                {
+                    pEventDevice[pCount][currentEvent]=i;
+                    break;
+                }
+            }
+            pEventDuration[pCount][currentEvent] = atoi(word3)/devSpeed[i];
+               //  AN I/O EVENT FOR THE CURRENT PROCESS, STORE THIS SOMEWHERE
+            printf("    Event %i Added, at %i time use %i %s for %iμs %ibyte.\n",
+                    pEventNums[pCount],pEventTime[pCount][currentEvent],i,
+                    currentDevice,pEventDuration[pCount][currentEvent],
+                    atoi(word3));
+            pEventNums[pCount]++;
         }
 
         else if(nwords == 2 && strcmp(word0, "exit") == 0) {
-            ;   //  PRESUMABLY THE LAST EVENT WE'LL SEE FOR THE CURRENT PROCESS
+            pEndTime[pCount]=atoi(word1);   
+            //  PRESUMABLY THE LAST EVENT WE'LL SEE FOR THE CURRENT PROCESS
+            printf("Process %i Exit at %i\n",pCount, pEndTime[pCount]);
         }
 
         else if(nwords == 1 && strcmp(word0, "}") == 0) {
-            ;   //  JUST THE END OF THE CURRENT PROCESS'S EVENTS
+            pCount++;   //  JUST THE END OF THE CURRENT PROCESS'S EVENTS
         }
         else {
             printf("%s: line %i of '%s' is unrecognized \n",

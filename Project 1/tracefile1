@@ -12,6 +12,6 @@ process  1  200 {
   exit     400
 }
 process  2  480 {
-  i/o      8000    screen  40
+  i/o      8000    wifi  40
   exit     8005
 }
