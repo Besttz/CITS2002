@@ -188,19 +188,23 @@ void simulate_job_mix(int time_quantum)
     //READY
     int readyQ[MAX_PROCESSES];//The queue for ready
     int nextR = 0; //The index of next ready process
-    int readyQEnd= 0; //The current end point of ready queue
+    int readyQEnd= 0; //The current end point of ready queue(No process here)
     //BLOCK
     int devQ[MAX_DEVICES][MAX_PROCESSES];//The queue for block for each device
     int devQDuration[MAX_DEVICES][MAX_PROCESSES];//The next event duration
     int nextD[MAX_DEVICES]; //The index of next block process
-    int devQEnd[MAX_DEVICES];//The current end point of block queue
+    int devQEnd[MAX_DEVICES];//The current end point of block queue(No here)
 
     int time = 0;//System time
     int processTime[MAX_PROCESSES];//Total exe time of process
     int finishedProcess = 0;//The count of finished process
-    int processOnCPU = -1;//Current runnning process in CPU
-    int CPUrunningTime = 0;//Current runnning time of this time quantum
 
+    int processOnCPU = -1;//Current runnning process in CPU
+    int processOnIO = -1;//Current runnning process in data bus
+    int CPUrunningTime = 0;//Current runnning time of this time quantum
+    int devRunningTime = 0;//Current I/O request runnning time
+
+    int switched = 0; // RECORD IF SWITCHED CONTENT in the last loop
     //START TO SIMULATE LOOP
     //THE LOOP WILL REPEAT ONCE THE TIME CHANGES
     //SO AT BEGINNING WE NEED TO DECIDE HOW MANYTIME ADDED THIS TIME
@@ -208,11 +212,11 @@ void simulate_job_mix(int time_quantum)
     {
         //POSSBILITY OF TIME CHANGES(DIFFERENT RESPONSE)
         //1. NEW PROCESS ADDED 
-        //2.TIME QUANTUM 3.READY PROCESS EXIT 4.READY PROCESS REQUEST I/O
-        //CASE 2-4 MAY HAPPEN FOR RUNNING PROCESS OR READY PROCESS
-        //5. BLOCKED -> READY(I/O FINISHED)
+        //2.TIME QUANTUM 3. PROCESS EXIT 4. PROCESS REQUEST I/O
+        //5. BLOCKED -> READY(I/O FINISHED) 
+        //6. READY->RUNNING(NO PROCESS RUNNING)
         //THEN WE CHECK THE NEAREST THING AND DO IT
-// CASE CHECKING
+// CASE CHECKING !需要考虑上次切换上下文的状态!现在还没考虑完善 
         //CHECK TIME TO CASE 1
         int case1 = 10000000000; 
         int c1Process;
@@ -230,37 +234,44 @@ void simulate_job_mix(int time_quantum)
         //CHECK TIME TO CASE 2 3 4 
         //CHECK THE NEXT PROCESS EXIT TIME OR EVENT 
 
+        //NEED TO ADD SWITCH C
         int case2or3or4 = 10000000000;
-        int case234 = 0;
-        int eventTime = 0;
-        int case234Running = 0;
+        int case2346 = 0;
+        int devID = 0; // For case 4
+        int devDuration = 0;// For case 4
         if (processOnCPU!=-1)
         {
+            int eventTime = 0;
             for (int i = 0; i < pEventNums[processOnCPU]; i++)
                 {
-                    int tt =pEventTime[processOnCPU][i]-CPUrunningTime;
+                    int tt =pEventTime[processOnCPU][i]-processTime[processOnCPU];
                     if (tt>=0)
                     {
                         eventTime = tt;
-                        case234 = 4;
+                        case2346 = 4;
+                        devID = pEventDevice[processOnCPU][i];
+                        devDuration = pEventDuration[processOnCPU][i];
                         break; //IF THERE'S NEXT EVENT, SET CASE 4
                     }   
                 }
-            if (case234==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
-            {
-                eventTime= pEndTime[processOnCPU]-CPUrunningTime;
-                case234 = 3;
+            if (case2346==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
+            { 
+                eventTime= pEndTime[processOnCPU]-processTime[processOnCPU];
+                case2346 = 3;
             }
             
             if (eventTime>time_quantum-CPUrunningTime) 
             {
-                case234 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
+                case2346 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
                 case2or3or4 = time_quantum-CPUrunningTime;
             } else {
                 case2or3or4 = eventTime;
             }
-            case234Running = 1;
-        } else {            
+        } else { //CURRENT RUNNING NO PROCESS
+            case2or3or4 = 5-CPUrunningTime;
+            case2346 = 6;
+        }
+    /*{            
             //AND COMPARE WITH T.Q.
             if (nextR!=readyQEnd) //CHECK IF HAS PROCESS IN READY
             {
@@ -290,9 +301,11 @@ void simulate_job_mix(int time_quantum)
                 }
             }
             
-        }
-        //CHECK TIME TO CASE 5
+        } */
+
+//CHECK TIME TO CASE 5  因为 CPU 执行其他任务时 I/O 也在读写 需要记录当前 I/O 任务 
         int case5 = 10000000000;
+        int c5DevID=0;
         //CHECK EVERY DEVICE FROM PRIORITY 0-MAX
         for (int i = 0; i < devCount; i++)
         {
@@ -300,7 +313,8 @@ void simulate_job_mix(int time_quantum)
             {
                 continue;
             }
-            case5=devQDuration[i][nextD[i]];
+            case5=devQDuration[i][nextD[i]]-devRunningTime;
+            int c5DevID = i;
             break;
         }
         //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
@@ -311,12 +325,14 @@ void simulate_job_mix(int time_quantum)
             else caseNo = 5;
         } else {
             if (case2or3or4<case5) {
-                caseNo = case234;
+                caseNo = case2346;
             } else caseNo = 5;
         }
         //GET REAL CASENO, NOW USE A SWITCH
 //SIMULATE
-        switch (caseNo)
+        //EVERYTIME WHEN THE TIME IS PASSING, THE
+        // CPUrunningTime  devRunningTime processTime time need to increse too
+        switch (caseNo) //每次增加时长需要同时记录 CPU 运行 当前进程运行时长 当前 I/O 任务运行时长 系统总时间
         {
         case 1: //NEW PROCESS ADDED, PUT IT INTO READY QUEUE
             //CHECK IF CURRENT INDEX IS IN ARRAY END POINT
@@ -324,41 +340,96 @@ void simulate_job_mix(int time_quantum)
             {
                 readyQ[readyQEnd++] = c1Process;
             } else { //PUT IT AT THE BEGINNING OF ARRAY
-                readyQ[0] = c1Process;
+                readyQ[MAX_PROCESSES-1] = c1Process;
                 readyQEnd = 0;
             }
-            //BECAUSE CPU IS STILL RUNNING, THEN COUNT IT
-            if (processOnCPU != -1)
+            //TIME ADDED
+            CPUrunningTime+=case1;
+            devRunningTime+=case1;
+            time+=case1;
+            if (processOnCPU!=-1) processTime[processOnCPU]+=case1;
+            
+            break;
+        case 2: // KEEP RUNNING UNTIL T.Q.
+            
+            time += case2or3or4; //ADD SYSTEM TIME CHANGE
+            processTime[processOnCPU] +=case2or3or4; //ADD PROCESS TIME
+            devRunningTime+=case2or3or4;
+            //Checked the ready queue to decide if needs switch
+            if (nextR!=readyQEnd)
             {
-                CPUrunningTime+=case1;
+                switched = 1;
+                //Put current process end of queue
+                if (readyQEnd!=MAX_PROCESSES-1)  
+                    readyQ[readyQEnd++] = processOnCPU;
+                else { //OR PUT IT AT THE BEGINNING OF ARRAY
+                    readyQ[MAX_PROCESSES-1] = processOnCPU;
+                    readyQEnd = 0;
+                }
+                //Switch ready to the next process
+                if (nextR!=MAX_PROCESSES-1)  nextR++;
+                else  nextR = 0;
+                processOnCPU = -1;
             }
-            
-            
+            CPUrunningTime = 0;
             break;
-        case 2:
+        case 3: //KEEP RUNNING UNTIL EXIT
+            //系统时间增加
+            //I/O 时间增加
+            //当前进程处理时间改为 -1
+            //进程处理完成数 +=1
+            //Ready 队列换成下一个
+            //CPU 处理时间 0
+            //上下文切换 是
             /* code */
             break;
-        case 3:
+        case 4: //KEEP RUNNING UNTIL I/O REQUIST
+            //系统时间增加
+            //I/O 时间增加
+            //当前进程处理时间增加
+            //上下文切换 根据是否有 Ready 判断
+            //Ready 队列换成下一个
+            //对应设备的队列加入本进程 根据 devQEnd判断 位置
+            //对应设备的队列时间信息加入本进程 位置同上
+            //CPU 处理时间 0
             /* code */
             break;
-        case 4:
+        case 5: // FINISH AN I/O REQUIST, BLOCK -> READY
+            //系统时间增加
+            //当前进程处理时间增加
+            //CPU 处理时间增加
+            //当前处理进程加入 Ready 队列 （模仿 case1）
+            //设备 Ready 队列换成下一个
+            //查看设备 Ready 队列（下一个任务）是否需要换进程（上下文切换） 是则处理时'-5'
+            //否则 I/O 时间归零
             /* code */
             break;
-        case 5:
+        case 6: // MOVE READY TO RUNNING 切换上下文时间过后
+            //系统时间增加
+            //I/O 时间增加
+            //CPU 处理时间 0
+            //当前处理进程改为 Ready 首位
+            //Ready 队列换成下一个
             /* code */
             break;
                     
         default:
             break;
         }
-        //THE 5 microseconds FOR CONTENT SWITCH
+        //THE 5 microseconds FOR CONTENT SWITCH 注意 上下文切换时间
         
         /* code */
     }
     
     //DECIDED HOW MUCH TIME PAST
-    printf("running simulate_job_mix( time_quantum = %i usecs )\n",
-                time_quantum);
+    printf("running simulate_job_mix( time_quantum = %i usecs ), total %iμs\n",
+                time_quantum, time);
+    // CHECK IF IT'S BEST
+    if (time < total_process_completion_time )
+    {
+        total_process_completion_time = time;
+        optimal_time_quantum = time_quantum;
+    }
 }
 
 //  ----------------------------------------------------------------------
