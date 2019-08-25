@@ -184,7 +184,139 @@ void parse_tracefile (char program[], char tracefile[])
 //  SIMULATE THE JOB-MIX FROM THE TRACEFILE, FOR THE GIVEN TIME-QUANTUM
 void simulate_job_mix(int time_quantum)
 {
-    // int systemTime = 0;
+    //PREPARING DATA STRUCTURE FOR QUEUES 
+    //READY
+    int readyQ[MAX_PROCESSES];//The queue for ready
+    int nextR = 0; //The index of next ready process
+    int readyQEnd= 0; //The current end point of ready queue
+    //BLOCK
+    int devQ[MAX_DEVICES][MAX_PROCESSES];//The queue for block for each device
+    int devQDuration[MAX_DEVICES][MAX_PROCESSES];//The next event duration
+    int nextD[MAX_DEVICES]; //The index of next block process
+    int devQEnd[MAX_DEVICES];//The current end point of block queue
+
+    int time = 0;//System time
+    int processTime[MAX_PROCESSES];//Total exe time of process
+    int finishedProcess = 0;//The count of finished process
+    int processOnCPU = -1;//Current runnning process in CPU
+    int CPUrunningTime = 0;//Current runnning time of this time quantum
+
+    //START TO SIMULATE LOOP
+    //THE LOOP WILL REPEAT ONCE THE TIME CHANGES
+    //SO AT BEGINNING WE NEED TO DECIDE HOW MANYTIME ADDED THIS TIME
+    while (finishedProcess != pCount)
+    {
+        //POSSBILITY OF TIME CHANGES(DIFFERENT RESPONSE)
+        //1. NEW PROCESS ADDED 
+        //2.TIME QUANTUM 3.RUNNING PROCESS EXIT 4.RUNNING PROCESS REQUEST I/O
+        //5. BLOCKED -> READY(I/O FINISHED)
+        //THEN WE CHECK THE NEAREST THING AND DO IT
+
+        //CHECK TIME TO CASE 1
+        int case1 = 10000000000; 
+        int c1Process;
+        for (int i = 0; i < pCount; i++)
+        {
+            if (pStartTime[i]>time&&pStartTime[i]-time<case1)
+            {
+                c1Process = i;
+                case1 = pStartTime[i]-time;
+            }
+        }
+
+        //CHECK TIME TO CASE 2 3 4 
+        //CHECK THE NEXT PROCESS EXIT TIME OR EVENT 
+        int case2or3or4 = 10000000000;
+        int case234 = 0;
+        //AND COMPARE WITH T.Q.
+        if (nextR!=readyQEnd) //CHECK IF HAS PROCESS IN READY
+        {
+            //CHECK ALL THE EVENT IS DONE
+            int eventTime = 0;
+            for (int i = 0; i < pEventNums[nextR]; i++)
+            {
+                int tt =pEventTime[readyQ[nextR]][i]-processTime[readyQ[nextR]];
+                if (tt>=0)
+                {
+                    eventTime = tt;
+                    case234 = 4;
+                    break; //IF THERE'S NEXT EVENT, SET CASE 4
+                }   
+            }
+            if (case234==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
+            {
+                eventTime= pEndTime[readyQ[nextR]]-processTime[readyQ[nextR]];
+                case234 = 3;
+            }
+            
+            if (eventTime>time_quantum) 
+            {
+                case234 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
+                case2or3or4 = time_quantum;
+            } else {
+                case2or3or4 = eventTime;
+            }
+        }
+        
+        //CHECK TIME TO CASE 5
+        int case5 = 10000000000;
+        //CHECK EVERY DEVICE FROM PRIORITY 0-MAX
+        for (int i = 0; i < devCount; i++)
+        {
+            if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
+            {
+                continue;
+            }
+            case5=devQDuration[i][nextD[i]];
+            break;
+        }
+        //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
+        int caseNo = 0;
+        if (case1<case2or3or4)
+        {
+            if (case1<case5) caseNo = 1;
+            else caseNo = 5;
+        } else {
+            if (case2or3or4<case5) {
+                caseNo = case234;
+            } else caseNo = 5;
+        }
+        //GET REAL CASENO, NOW USE A SWITCH
+        switch (caseNo)
+        {
+        case 1: //NEW PROCESS ADDED, PUT IT INTO READY QUEUE
+            //CHECK IF CURRENT INDEX IS IN ARRAY END POINT
+            if (readyQEnd!=MAX_PROCESSES-1) 
+            {
+                readyQ[readyQEnd++] = c1Process;
+            } else { //PUT IT AT THE BEGINNING OF ARRAY
+                readyQ[0] = c1Process;
+                readyQEnd = 0;
+            }
+            
+            break;
+        case 2:
+            /* code */
+            break;
+        case 3:
+            /* code */
+            break;
+        case 4:
+            /* code */
+            break;
+        case 5:
+            /* code */
+            break;
+                    
+        default:
+            break;
+        }
+        //THE 5 microseconds FOR CONTENT SWITCH
+        
+        /* code */
+    }
+    
+    //DECIDED HOW MUCH TIME PAST
     printf("running simulate_job_mix( time_quantum = %i usecs )\n",
                 time_quantum);
 }
