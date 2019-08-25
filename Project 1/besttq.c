@@ -208,10 +208,11 @@ void simulate_job_mix(int time_quantum)
     {
         //POSSBILITY OF TIME CHANGES(DIFFERENT RESPONSE)
         //1. NEW PROCESS ADDED 
-        //2.TIME QUANTUM 3.RUNNING PROCESS EXIT 4.RUNNING PROCESS REQUEST I/O
+        //2.TIME QUANTUM 3.READY PROCESS EXIT 4.READY PROCESS REQUEST I/O
+        //CASE 2-4 MAY HAPPEN FOR RUNNING PROCESS OR READY PROCESS
         //5. BLOCKED -> READY(I/O FINISHED)
         //THEN WE CHECK THE NEAREST THING AND DO IT
-
+// CASE CHECKING
         //CHECK TIME TO CASE 1
         int case1 = 10000000000; 
         int c1Process;
@@ -224,40 +225,72 @@ void simulate_job_mix(int time_quantum)
             }
         }
 
+        //CHECK IF PROCESS RUNNING, IF SO CASE 2 3 4 IS FOR THIS PROCESS
+        //ELSE CASE 2 3 4 FOR THE PROCESS IN READY
         //CHECK TIME TO CASE 2 3 4 
         //CHECK THE NEXT PROCESS EXIT TIME OR EVENT 
+
         int case2or3or4 = 10000000000;
         int case234 = 0;
-        //AND COMPARE WITH T.Q.
-        if (nextR!=readyQEnd) //CHECK IF HAS PROCESS IN READY
+        int eventTime = 0;
+        int case234Running = 0;
+        if (processOnCPU!=-1)
         {
-            //CHECK ALL THE EVENT IS DONE
-            int eventTime = 0;
-            for (int i = 0; i < pEventNums[nextR]; i++)
-            {
-                int tt =pEventTime[readyQ[nextR]][i]-processTime[readyQ[nextR]];
-                if (tt>=0)
+            for (int i = 0; i < pEventNums[processOnCPU]; i++)
                 {
-                    eventTime = tt;
-                    case234 = 4;
-                    break; //IF THERE'S NEXT EVENT, SET CASE 4
-                }   
-            }
+                    int tt =pEventTime[processOnCPU][i]-CPUrunningTime;
+                    if (tt>=0)
+                    {
+                        eventTime = tt;
+                        case234 = 4;
+                        break; //IF THERE'S NEXT EVENT, SET CASE 4
+                    }   
+                }
             if (case234==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
             {
-                eventTime= pEndTime[readyQ[nextR]]-processTime[readyQ[nextR]];
+                eventTime= pEndTime[processOnCPU]-CPUrunningTime;
                 case234 = 3;
             }
             
-            if (eventTime>time_quantum) 
+            if (eventTime>time_quantum-CPUrunningTime) 
             {
                 case234 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
-                case2or3or4 = time_quantum;
+                case2or3or4 = time_quantum-CPUrunningTime;
             } else {
                 case2or3or4 = eventTime;
             }
+            case234Running = 1;
+        } else {            
+            //AND COMPARE WITH T.Q.
+            if (nextR!=readyQEnd) //CHECK IF HAS PROCESS IN READY
+            {
+                //CHECK ALL THE EVENT IS DONE
+                for (int i = 0; i < pEventNums[nextR]; i++)
+                {
+                    int tt =pEventTime[readyQ[nextR]][i]-processTime[readyQ[nextR]];
+                    if (tt>=0)
+                    {
+                        eventTime = tt;
+                        case234 = 4;
+                        break; //IF THERE'S NEXT EVENT, SET CASE 4
+                    }   
+                }
+                if (case234==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
+                {
+                    eventTime= pEndTime[readyQ[nextR]]-processTime[readyQ[nextR]];
+                    case234 = 3;
+                }
+                
+                if (eventTime>time_quantum) 
+                {
+                    case234 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
+                    case2or3or4 = time_quantum;
+                } else {
+                    case2or3or4 = eventTime;
+                }
+            }
+            
         }
-        
         //CHECK TIME TO CASE 5
         int case5 = 10000000000;
         //CHECK EVERY DEVICE FROM PRIORITY 0-MAX
@@ -282,6 +315,7 @@ void simulate_job_mix(int time_quantum)
             } else caseNo = 5;
         }
         //GET REAL CASENO, NOW USE A SWITCH
+//SIMULATE
         switch (caseNo)
         {
         case 1: //NEW PROCESS ADDED, PUT IT INTO READY QUEUE
@@ -293,6 +327,12 @@ void simulate_job_mix(int time_quantum)
                 readyQ[0] = c1Process;
                 readyQEnd = 0;
             }
+            //BECAUSE CPU IS STILL RUNNING, THEN COUNT IT
+            if (processOnCPU != -1)
+            {
+                CPUrunningTime+=case1;
+            }
+            
             
             break;
         case 2:
