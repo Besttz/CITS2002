@@ -194,12 +194,26 @@ void simulate_job_mix(int time_quantum)
     int devQDuration[MAX_DEVICES][MAX_PROCESSES];//The next event duration
     int nextD[MAX_DEVICES]; //The index of next block process
     int devQEnd[MAX_DEVICES];//The current end point of block queue(No here)
-
+    for (int i = 0; i < MAX_DEVICES; i++)
+    {
+        devQEnd[i] =0;
+        nextD[i] =0;
+        for (int j = 0; j < MAX_PROCESSES; j++)
+        {
+            devQ[i][j]=0;
+            devQDuration[i][j]=0;
+        }
+    }
     int time = 0;//System time
     int processTime[MAX_PROCESSES];//Total exe time of process
     int finishedProcess = 0;//The count of finished process
     int finishedIO[MAX_PROCESSES];//Total I/O task done by this process
-
+    for (int i = 0; i < MAX_PROCESSES; i++)
+    {
+        readyQ[i]=0;
+        processTime[i]=0;
+        finishedIO[i]=0;
+    }
     int processOnCPU = -1;//Current runnning process in CPU
     int processOnIO = -1;//Current runnning process in data bus
     int CPUrunningTime = 0;//Current runnning time of this time quantum
