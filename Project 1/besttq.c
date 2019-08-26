@@ -369,6 +369,7 @@ void simulate_job_mix(int time_quantum)
             //devQEnd ++
             if (devQEnd[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
                 else  devQEnd[devID] = 0; 
+            processOnCPU =-1;
             /* code */
             break;
         case 5: // FINISH AN I/O REQUIST, BLOCK -> READY
