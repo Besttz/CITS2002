@@ -200,7 +200,7 @@ void simulate_job_mix(int time_quantum)
     int finishedProcess = 0;//The count of finished process
 
     int processOnCPU = -1;//Current runnning process in CPU
-    int processOnIO = -1;//Current runnning process in data bus
+    // int processOnIO = -1;//Current runnning process in data bus
     int CPUrunningTime = 0;//Current runnning time of this time quantum
     int devRunningTime = 0;//Current I/O request runnning time
 
@@ -218,7 +218,7 @@ void simulate_job_mix(int time_quantum)
         //THEN WE CHECK THE NEAREST THING AND DO IT
 // CASE CHECKING !需要考虑上次切换上下文的状态!现在还没考虑完善 
         //CHECK TIME TO CASE 1
-        int case1 = 10000000000; 
+        int case1 = 1000000000; 
         int c1Process;
         for (int i = 0; i < pCount; i++)
         {
@@ -235,7 +235,7 @@ void simulate_job_mix(int time_quantum)
         //CHECK THE NEXT PROCESS EXIT TIME OR EVENT 
 
         //NEED TO ADD SWITCH C
-        int case2or3or4 = 10000000000;
+        int case2or3or4 = 1000000000;
         int case2346 = 0;
         int devID = 0; // For case 4
         int devDuration = 0;// For case 4
@@ -304,7 +304,7 @@ void simulate_job_mix(int time_quantum)
         } */
 
 //CHECK TIME TO CASE 5  因为 CPU 执行其他任务时 I/O 也在读写 需要记录当前 I/O 任务 
-        int case5 = 10000000000;
+        int case5 = 1000000000;
         int c5DevID=0;
         int c5Process = 0;
         //CHECK EVERY DEVICE FROM PRIORITY 0-MAX
@@ -319,22 +319,18 @@ void simulate_job_mix(int time_quantum)
             c5Process = devQ[i][nextD[i]];
             break;
         }
-        int case6 = 10000000000;
+        int case6 = 1000000000;
         if(switched){
             case6 = 5-CPUrunningTime;
         }
         //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
         //!!!!!!CASE6
         int caseNo = 0;
-        if (case1<case2or3or4)
-        {
-            if (case1<case5) caseNo = 1;
-            else caseNo = 5;
-        } else {
-            if (case2or3or4<case5) {
-                caseNo = case2346;
-            } else caseNo = 5;
-        }
+        if((case6<case5) && (case6<case2or3or4) && (case6<case1)) caseNo = 6;
+        else if((case5<case6) && (case5<case2or3or4) && (case5<case1))caseNo=5;
+        else if((case2or3or4<case6) && (case2or3or4<case5) && (case2or3or4<case1))
+        caseNo=case2346;
+        else caseNo=1;
         //GET REAL CASENO, NOW USE A SWITCH
 //SIMULATE
         //EVERYTIME WHEN THE TIME IS PASSING, THE
