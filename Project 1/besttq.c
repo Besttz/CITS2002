@@ -33,8 +33,8 @@
 //  AND THAT THE TOTAL-PROCESS-COMPLETION-TIME WILL NOT EXCEED 2000 SECONDS
 //  (SO YOU CAN SAFELY USE 'STANDARD' 32-BIT ints TO STORE TIMES).
 
-int optimal_time_quantum                = 0;
-int total_process_completion_time       = 0;
+int optimal_time_quantum                = 1000000000;
+int total_process_completion_time       = 1000000000;
 
 //  ----------------------------------------------------------------------
 
@@ -198,6 +198,7 @@ void simulate_job_mix(int time_quantum)
     int time = 0;//System time
     int processTime[MAX_PROCESSES];//Total exe time of process
     int finishedProcess = 0;//The count of finished process
+    int finishedIO[MAX_PROCESSES];//Total I/O task done by this process
 
     int processOnCPU = -1;//Current runnning process in CPU
     int processOnIO = -1;//Current runnning process in data bus
@@ -242,20 +243,14 @@ void simulate_job_mix(int time_quantum)
         if (processOnCPU!=-1)
         {
             int eventTime = 0;
-            for (int i = 0; i < pEventNums[processOnCPU]; i++)
-                {
-                    int tt =pEventTime[processOnCPU][i]-processTime[processOnCPU];
-                    if (tt>=0)
-                    {
-                        eventTime = tt;
-                        case2346 = 4;
-                        devID = pEventDevice[processOnCPU][i];
-                        devDuration = pEventDuration[processOnCPU][i];
-                        break; //IF THERE'S NEXT EVENT, SET CASE 4
-                    }   
-                }
-            if (case2346==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
-            { 
+            if (finishedIO[processOnCPU]!=pEventNums[processOnCPU])
+            {
+                eventTime=pEventTime[processOnCPU][finishedIO[processOnCPU]]-
+                    processTime[processOnCPU];
+                case2346 = 4;
+                devID = pEventDevice[processOnCPU][finishedIO[processOnCPU]];
+                devDuration = pEventDuration[processOnCPU][finishedIO[processOnCPU]];
+            } else { 
                 eventTime= pEndTime[processOnCPU]-processTime[processOnCPU];
                 case2346 = 3;
             }
@@ -381,6 +376,7 @@ void simulate_job_mix(int time_quantum)
             } else if(nextR!=readyQEnd) {
                 CPUrunningTime+=case5;
             }
+            finishedIO[c5Process] ++;
             // processTime[processOnCPU] +=case5;//当前进程处理时间增加
             // CPUrunningTime +=case5;//CPU 处理时间增加
             //当前处理进程加入 Ready 队列 （模仿 case1）
@@ -393,10 +389,10 @@ void simulate_job_mix(int time_quantum)
                 readyQEnd = 0;
             }
             //设备 Ready 队列换成下一个
-            if (nextD[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
-                else  nextD[devID] = 0; 
+            if (nextD[devID]!=MAX_PROCESSES-1)  nextD[c5DevID]++;
+                else  nextD[c5DevID] = 0; 
             //查看设备 Ready 队列（下一个任务）是否需要换进程（上下文切换） 是则处理时'-5'
-            //否则 I/O 时间归零
+            devRunningTime = 0; //否则 I/O 时间归零
             //CHECK IF CURRENT DEVICE HAS MORE QUEUE OR CHECK REST DEVICE
             for (int i = devID; i < devCount; i++)
             {
@@ -405,7 +401,6 @@ void simulate_job_mix(int time_quantum)
                     continue;
                 }
                 if (c5Process != devQ[i][nextD[i]]) devRunningTime = -5;
-                else devRunningTime = 0;
                 break;
             }
             break;
