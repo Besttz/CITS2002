@@ -267,9 +267,6 @@ void simulate_job_mix(int time_quantum)
             } else {
                 case2or3or4 = eventTime;
             }
-        } else { //CURRENT RUNNING NO PROCESS
-            case2or3or4 = 5-CPUrunningTime;
-            case2346 = 6;
         }
     /*{            
             //AND COMPARE WITH T.Q.
