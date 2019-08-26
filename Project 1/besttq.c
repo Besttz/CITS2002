@@ -306,6 +306,7 @@ void simulate_job_mix(int time_quantum)
 //CHECK TIME TO CASE 5  因为 CPU 执行其他任务时 I/O 也在读写 需要记录当前 I/O 任务 
         int case5 = 10000000000;
         int c5DevID=0;
+        int c5Process = 0;
         //CHECK EVERY DEVICE FROM PRIORITY 0-MAX
         for (int i = 0; i < devCount; i++)
         {
@@ -314,10 +315,16 @@ void simulate_job_mix(int time_quantum)
                 continue;
             }
             case5=devQDuration[i][nextD[i]]-devRunningTime;
-            int c5DevID = i;
+            c5DevID = i;
+            c5Process = devQ[i][nextD[i]];
             break;
         }
+        int case6 = 10000000000;
+        if(switched){
+            case6 = 5-CPUrunningTime;
+        }
         //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
+        //!!!!!!CASE6
         int caseNo = 0;
         if (case1<case2or3or4)
         {
@@ -366,59 +373,79 @@ void simulate_job_mix(int time_quantum)
                     readyQ[MAX_PROCESSES-1] = processOnCPU;
                     readyQEnd = 0;
                 }
-                //Switch ready to the next process
-                if (nextR!=MAX_PROCESSES-1)  nextR++;
-                else  nextR = 0;
                 processOnCPU = -1;
             }
             CPUrunningTime = 0;
             break;
         case 3: //KEEP RUNNING UNTIL EXIT
-            //系统时间增加
-            //I/O 时间增加
-            //当前进程处理时间改为 -1
-            //进程处理完成数 +=1
-            //Ready 队列换成下一个
-            //CPU 处理时间 0
-            //上下文切换 是
-            /* code */
+            time += case2or3or4;//系统时间增加
+            devRunningTime+=case2or3or4;//I/O 时间增加
+            processTime[processOnCPU] = -1;//当前进程处理时间改为 -1
+            finishedProcess++;//进程处理完成数 +=1
+            CPUrunningTime = 0;//CPU 处理时间 0
+            processOnCPU = -1;
+            if (nextR!=readyQEnd) switched = 1;//上下文切换 是
             break;
         case 4: //KEEP RUNNING UNTIL I/O REQUIST
-            //系统时间增加
-            //I/O 时间增加
-            //当前进程处理时间增加
-            //上下文切换 根据是否有 Ready 判断
-            //Ready 队列换成下一个
+            time += case2or3or4;//系统时间增加
+            devRunningTime+=case2or3or4;//I/O 时间增加
+            processTime[processOnCPU] +=case2or3or4;//当前进程处理时间增加
+            CPUrunningTime = 0;//CPU 处理时间 0
+            switched = 1;//上下文切换 是
             //对应设备的队列加入本进程 根据 devQEnd判断 位置
+            devQ[devID][devQEnd[devID]] = processOnCPU;
+            devQDuration[devID][devQEnd[devID]]=devDuration;
             //对应设备的队列时间信息加入本进程 位置同上
-            //CPU 处理时间 0
+            //devQEnd ++
+            if (devQEnd[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
+                else  devQEnd[devID] = 0; 
             /* code */
             break;
         case 5: // FINISH AN I/O REQUIST, BLOCK -> READY
-            //系统时间增加
-            //当前进程处理时间增加
-            //CPU 处理时间增加
+            time += case5;//系统时间增加
+            processTime[processOnCPU] +=case5;//当前进程处理时间增加
+            CPUrunningTime +=case5;//CPU 处理时间增加
             //当前处理进程加入 Ready 队列 （模仿 case1）
+            //CHECK IF CURRENT INDEX IS IN ARRAY END POINT
+            if (readyQEnd!=MAX_PROCESSES-1) 
+            {
+                readyQ[readyQEnd++] = c5Process;
+            } else { //PUT IT AT THE BEGINNING OF ARRAY
+                readyQ[MAX_PROCESSES-1] = c5Process;
+                readyQEnd = 0;
+            }
             //设备 Ready 队列换成下一个
+            if (nextD[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
+                else  nextD[devID] = 0; 
             //查看设备 Ready 队列（下一个任务）是否需要换进程（上下文切换） 是则处理时'-5'
             //否则 I/O 时间归零
-            /* code */
+            //CHECK IF CURRENT DEVICE HAS MORE QUEUE OR CHECK REST DEVICE
+            for (int i = devID; i < devCount; i++)
+            {
+                if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
+                {
+                    continue;
+                }
+                if (c5Process != devQ[i][nextD[i]]) devRunningTime = -5;
+                else devRunningTime = 0;
+                break;
+            }
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
-            //系统时间增加
-            //I/O 时间增加
-            //CPU 处理时间 0
-            //当前处理进程改为 Ready 首位
+            time += case2or3or4;//系统时间增加
+            devRunningTime+=case2or3or4;//I/O 时间增加
+            CPUrunningTime = 0;//CPU 处理时间 0
+            processOnCPU = readyQ[nextR];//当前处理进程改为 Ready 首位
+            //Switch ready to the next process
+            if (nextR!=MAX_PROCESSES-1)  nextR++;
+            else  nextR = 0;
             //Ready 队列换成下一个
-            /* code */
             break;
                     
         default:
             break;
         }
-        //THE 5 microseconds FOR CONTENT SWITCH 注意 上下文切换时间
-        
-        /* code */
+
     }
     
     //DECIDED HOW MUCH TIME PAST
