@@ -289,7 +289,7 @@ void simulate_job_mix(int time_quantum)
         // if(switched){
         //     case6 = 5-CPUrunningTime;
         // }
-        if (processOnCPU == -1)
+        if (processOnCPU == -1&&nextR!=readyQEnd)
         {
             case6 = 5-CPUrunningTime;
         }
@@ -322,8 +322,10 @@ void simulate_job_mix(int time_quantum)
             CPUrunningTime+=case1;
             devRunningTime+=case1;
             time+=case1;
-            if (processOnCPU!=-1) processTime[processOnCPU]+=case1;
-            
+            if (processOnCPU!=-1) {
+                processTime[processOnCPU]+=case1;
+                CPUrunningTime+=case1;
+            } else CPUrunningTime =0;
             break;
         case 2: // KEEP RUNNING UNTIL T.Q.
             
@@ -400,7 +402,7 @@ void simulate_job_mix(int time_quantum)
             }
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
-            time += case2or3or4;//系统时间增加
+            time += case6;//系统时间增加
             devRunningTime+=case2or3or4;//I/O 时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
             processOnCPU = readyQ[nextR];//当前处理进程改为 Ready 首位
