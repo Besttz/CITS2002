@@ -268,13 +268,11 @@ void simulate_job_mix(int time_quantum)
                 eventTime= pEndTime[processOnCPU]-processTime[processOnCPU];
                 case2346 = 3;
             }
-            
-            if (eventTime>=time_quantum-CPUrunningTime&&eventTime!=0) 
+            case2or3or4 = eventTime;
+            if (eventTime>time_quantum-CPUrunningTime&&eventTime!=0) 
             {
                 case2346 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
                 case2or3or4 = time_quantum-CPUrunningTime;
-            } else {
-                case2or3or4 = eventTime;
             }
         }
 
