@@ -310,6 +310,14 @@ void simulate_job_mix(int time_quantum)
         switch (caseNo) //每次增加时长需要同时记录 CPU 运行 当前进程运行时长 当前 I/O 任务运行时长 系统总时间
         {
         case 1: //NEW PROCESS ADDED, PUT IT INTO READY QUEUE
+            if (processOnIO!=-1) devRunningTime+=case1;
+            time+=case1;
+            if (processOnCPU!=-1) {
+                processTime[processOnCPU]+=case1;
+                CPUrunningTime+=case1;
+            } else if(nextR!=readyQEnd) {
+                CPUrunningTime+=case1;
+            }
             //CHECK IF CURRENT INDEX IS IN ARRAY END POINT
             if (readyQEnd!=MAX_PROCESSES-1) 
             {
@@ -319,15 +327,6 @@ void simulate_job_mix(int time_quantum)
                 readyQEnd = 0;
             }
             //TIME ADDED
-            
-            if (processOnIO!=-1) devRunningTime+=case1;
-            time+=case1;
-            if (processOnCPU!=-1) {
-                processTime[processOnCPU]+=case1;
-                CPUrunningTime+=case1;
-            } else if(nextR!=readyQEnd) {
-                CPUrunningTime+=case1;
-            }
             break;
         case 2: // KEEP RUNNING UNTIL T.Q.
             
