@@ -200,7 +200,7 @@ void simulate_job_mix(int time_quantum)
     int finishedProcess = 0;//The count of finished process
 
     int processOnCPU = -1;//Current runnning process in CPU
-    // int processOnIO = -1;//Current runnning process in data bus
+    int processOnIO = -1;//Current runnning process in data bus
     int CPUrunningTime = 0;//Current runnning time of this time quantum
     int devRunningTime = 0;//Current I/O request runnning time
 
@@ -320,7 +320,7 @@ void simulate_job_mix(int time_quantum)
             }
             //TIME ADDED
             CPUrunningTime+=case1;
-            devRunningTime+=case1;
+            if (processOnIO!=-1) devRunningTime+=case1;
             time+=case1;
             if (processOnCPU!=-1) {
                 processTime[processOnCPU]+=case1;
@@ -331,7 +331,7 @@ void simulate_job_mix(int time_quantum)
             
             time += case2or3or4; //ADD SYSTEM TIME CHANGE
             processTime[processOnCPU] +=case2or3or4; //ADD PROCESS TIME
-            devRunningTime+=case2or3or4;
+            if (processOnIO!=-1) devRunningTime+=case2or3or4;
             //Checked the ready queue to decide if needs switch
             if (nextR!=readyQEnd)
             {
@@ -349,7 +349,7 @@ void simulate_job_mix(int time_quantum)
             break;
         case 3: //KEEP RUNNING UNTIL EXIT
             time += case2or3or4;//系统时间增加
-            devRunningTime+=case2or3or4;//I/O 时间增加
+            if (processOnIO!=-1) devRunningTime+=case2or3or4;//I/O 时间增加
             processTime[processOnCPU] = -1;//当前进程处理时间改为 -1
             finishedProcess++;//进程处理完成数 +=1
             CPUrunningTime = 0;//CPU 处理时间 0
@@ -358,7 +358,7 @@ void simulate_job_mix(int time_quantum)
             break;
         case 4: //KEEP RUNNING UNTIL I/O REQUIST
             time += case2or3or4;//系统时间增加
-            devRunningTime+=case2or3or4;//I/O 时间增加
+            if (processOnIO!=-1) devRunningTime+=case2or3or4;//I/O 时间增加
             processTime[processOnCPU] +=case2or3or4;//当前进程处理时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
             switched = 1;//上下文切换 是
@@ -404,7 +404,7 @@ void simulate_job_mix(int time_quantum)
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
             time += case6;//系统时间增加
-            devRunningTime+=case6;//I/O 时间增加
+            if (processOnIO!=-1) devRunningTime+=case6;//I/O 时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
             processOnCPU = readyQ[nextR];//当前处理进程改为 Ready 首位
             //Switch ready to the next process
