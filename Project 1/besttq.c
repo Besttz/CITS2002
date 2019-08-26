@@ -260,7 +260,7 @@ void simulate_job_mix(int time_quantum)
                 case2346 = 3;
             }
             
-            if (eventTime>time_quantum-CPUrunningTime) 
+            if (eventTime>=time_quantum-CPUrunningTime&&eventTime!=0) 
             {
                 case2346 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
                 case2or3or4 = time_quantum-CPUrunningTime;
@@ -403,7 +403,7 @@ void simulate_job_mix(int time_quantum)
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
             time += case6;//系统时间增加
-            devRunningTime+=case2or3or4;//I/O 时间增加
+            devRunningTime+=case6;//I/O 时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
             processOnCPU = readyQ[nextR];//当前处理进程改为 Ready 首位
             //Switch ready to the next process
