@@ -319,13 +319,15 @@ void simulate_job_mix(int time_quantum)
                 readyQEnd = 0;
             }
             //TIME ADDED
-            CPUrunningTime+=case1;
+            
             if (processOnIO!=-1) devRunningTime+=case1;
             time+=case1;
             if (processOnCPU!=-1) {
                 processTime[processOnCPU]+=case1;
                 CPUrunningTime+=case1;
-            } else CPUrunningTime =0;
+            } else if(nextR!=readyQEnd) {
+                CPUrunningTime+=case1;
+            }
             break;
         case 2: // KEEP RUNNING UNTIL T.Q.
             
@@ -374,8 +376,14 @@ void simulate_job_mix(int time_quantum)
             break;
         case 5: // FINISH AN I/O REQUIST, BLOCK -> READY
             time += case5;//系统时间增加
-            processTime[processOnCPU] +=case5;//当前进程处理时间增加
-            CPUrunningTime +=case5;//CPU 处理时间增加
+            if (processOnCPU!=-1) {
+                processTime[processOnCPU]+=case5;
+                CPUrunningTime+=case5;
+            } else if(nextR!=readyQEnd) {
+                CPUrunningTime+=case5;
+            }
+            // processTime[processOnCPU] +=case5;//当前进程处理时间增加
+            // CPUrunningTime +=case5;//CPU 处理时间增加
             //当前处理进程加入 Ready 队列 （模仿 case1）
             //CHECK IF CURRENT INDEX IS IN ARRAY END POINT
             if (readyQEnd!=MAX_PROCESSES-1) 
