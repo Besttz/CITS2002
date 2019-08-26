@@ -268,37 +268,6 @@ void simulate_job_mix(int time_quantum)
                 case2or3or4 = eventTime;
             }
         }
-    /*{            
-            //AND COMPARE WITH T.Q.
-            if (nextR!=readyQEnd) //CHECK IF HAS PROCESS IN READY
-            {
-                //CHECK ALL THE EVENT IS DONE
-                for (int i = 0; i < pEventNums[nextR]; i++)
-                {
-                    int tt =pEventTime[readyQ[nextR]][i]-processTime[readyQ[nextR]];
-                    if (tt>=0)
-                    {
-                        eventTime = tt;
-                        case234 = 4;
-                        break; //IF THERE'S NEXT EVENT, SET CASE 4
-                    }   
-                }
-                if (case234==0) //IF case234 ISNT MODIFIED, THEN CHECK REMAIN TIME
-                {
-                    eventTime= pEndTime[readyQ[nextR]]-processTime[readyQ[nextR]];
-                    case234 = 3;
-                }
-                
-                if (eventTime>time_quantum) 
-                {
-                    case234 = 2;//NEXT EVENT LONGER THAN TIME QUANTUM
-                    case2or3or4 = time_quantum;
-                } else {
-                    case2or3or4 = eventTime;
-                }
-            }
-            
-        } */
 
 //CHECK TIME TO CASE 5  因为 CPU 执行其他任务时 I/O 也在读写 需要记录当前 I/O 任务 
         int case5 = 1000000000;
@@ -317,9 +286,15 @@ void simulate_job_mix(int time_quantum)
             break;
         }
         int case6 = 1000000000;
-        if(switched){
+        // if(switched){
+        //     case6 = 5-CPUrunningTime;
+        // }
+        if (processOnCPU == -1)
+        {
             case6 = 5-CPUrunningTime;
         }
+        
+
         //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
         //!!!!!!CASE6
         int caseNo = 0;
