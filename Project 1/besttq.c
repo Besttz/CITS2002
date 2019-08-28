@@ -414,16 +414,16 @@ void simulate_job_mix(int time_quantum)
                 else  nextD[c5DevID] = 0; 
             //查看设备 Ready 队列（下一个任务）是否需要换进程（上下文切换） 是则处理时'-5'
             devRunningTime = 0; //否则 I/O 时间归零
-            //CHECK IF CURRENT DEVICE HAS MORE QUEUE OR CHECK REST DEVICE
-            for (int i = devID; i < devCount; i++)
-            {
-                if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
-                {
-                    continue;
-                }
-                if (c5Process != devQ[i][nextD[i]]) devRunningTime = -5;
-                break;
-            }
+            //首先核实当 数据总线换进程使用时是否还需计算五秒钟的问题 
+            // for (int i = devID; i < devCount; i++)
+            // {
+            //     if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
+            //     {
+            //         continue;
+            //     }
+            //     if (c5Process != devQ[i][nextD[i]]) devRunningTime = -5;
+            //     break;
+            // }
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
             time += case6;//系统时间增加
