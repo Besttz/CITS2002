@@ -219,7 +219,6 @@ void simulate_job_mix(int time_quantum)
     int CPUrunningTime = 0;//Current runnning time of this time quantum
     int devRunningTime = 0;//Current I/O request runnning time
 
-    int switched = 0; // RECORD IF SWITCHED CONTENT in the last loop
     //START TO SIMULATE LOOP
     //THE LOOP WILL REPEAT ONCE THE TIME CHANGES
     //SO AT BEGINNING WE NEED TO DECIDE HOW MANYTIME ADDED THIS TIME
@@ -245,10 +244,8 @@ void simulate_job_mix(int time_quantum)
                 {
                     if (readyQ[j]==i)  break;//This process already added
                 }
-                if (j!=MAX_PROCESSES) //breaked before
-                {
-                    continue;
-                } else {
+                if (j!=MAX_PROCESSES) continue;//breaked before
+                else {
                     c1Process = i;
                     case1 = 0;
                 }
@@ -308,9 +305,6 @@ void simulate_job_mix(int time_quantum)
             break;
         }
         int case6 = 1000000000;
-        // if(switched){
-        //     case6 = 5-CPUrunningTime;
-        // }
         if (processOnCPU == -1&&nextR!=readyQEnd)
         {
             case6 = 5-CPUrunningTime;
@@ -358,7 +352,6 @@ void simulate_job_mix(int time_quantum)
             //Checked the ready queue to decide if needs switch
             if (nextR!=readyQEnd)
             {
-                switched = 1;
                 //Put current process end of queue
                 if (readyQEnd!=MAX_PROCESSES-1)  
                     readyQ[readyQEnd++] = processOnCPU;
@@ -377,17 +370,18 @@ void simulate_job_mix(int time_quantum)
             finishedProcess++;//进程处理完成数 +=1
             CPUrunningTime = 0;//CPU 处理时间 0
             processOnCPU = -1;
-            if (nextR!=readyQEnd) switched = 1;//上下文切换 是
             break;
         case 4: //KEEP RUNNING UNTIL I/O REQUIST
             time += case2or3or4;//系统时间增加
             if (processOnIO!=-1) devRunningTime+=case2or3or4;//I/O 时间增加
             processTime[processOnCPU] +=case2or3or4;//当前进程处理时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
-            switched = 1;//上下文切换 是
             //对应设备的队列加入本进程 根据 devQEnd判断 位置
             devQ[devID][devQEnd[devID]] = processOnCPU;
-            devQDuration[devID][devQEnd[devID]]=devDuration;
+            //查看当进程是否已经请求过数据总线（看当前事件是否是该进程的第一个） 若无时长加5
+            if (finishedIO[processOnCPU]==0)
+                devQDuration[devID][devQEnd[devID]]=devDuration+5;
+            else devQDuration[devID][devQEnd[devID]]=devDuration;
             //对应设备的队列时间信息加入本进程 位置同上
             //devQEnd ++
             if (devQEnd[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
