@@ -210,7 +210,7 @@ void simulate_job_mix(int time_quantum)
     int finishedIO[MAX_PROCESSES];//Total I/O task done by this process
     for (int i = 0; i < MAX_PROCESSES; i++)
     {
-        readyQ[i]=0;
+        readyQ[i]=-1;
         processTime[i]=0;
         finishedIO[i]=0;
     }
@@ -237,7 +237,22 @@ void simulate_job_mix(int time_quantum)
         int c1Process;
         for (int i = 0; i < pCount; i++)
         {
-            if (pStartTime[i]>time&&pStartTime[i]-time<case1)
+            if (pStartTime[i]==time) { 
+                //check if at this time will be new process add
+                //check if this process already in ready queue
+                int j = 0;
+                for (; j < MAX_PROCESSES; j++)
+                {
+                    if (readyQ[j]==i)  break;//This process already added
+                }
+                if (j!=MAX_PROCESSES) //breaked before
+                {
+                    continue;
+                } else {
+                    c1Process = i;
+                    case1 = 0;
+                }
+            } else if (pStartTime[i]>time&&pStartTime[i]-time<case1)
             {
                 c1Process = i;
                 case1 = pStartTime[i]-time;
