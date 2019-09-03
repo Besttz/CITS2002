@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+//需要更正总体运行时间不包括第一个进程开始前的 bug
+//需要根据示范程序调整 I/O 的时间计算
 
 /* CITS2002 Project 1 2019
    Name(s):             Tommy Zhang, Zhenyu Yang
