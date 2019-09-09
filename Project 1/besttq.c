@@ -445,10 +445,11 @@ void simulate_job_mix(int time_quantum)
     }
     
     //DECIDED HOW MUCH TIME PAST
+    time -= pStartTime[0];
     printf("running simulate_job_mix( time_quantum = %i usecs ), total %iμs\n",
                 time_quantum, time);
     // CHECK IF IT'S BEST
-    if (time < total_process_completion_time )
+    if (time <= total_process_completion_time )
     {
         total_process_completion_time = time;
         optimal_time_quantum = time_quantum;
