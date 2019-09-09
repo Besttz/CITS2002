@@ -234,9 +234,11 @@ void simulate_job_mix(int time_quantum)
         //2.TIME QUANTUM 3. PROCESS EXIT 4. PROCESS REQUEST I/O
         //5. BLOCKED -> READY(I/O FINISHED) 
         //6. READY->RUNNING(NO PROCESS RUNNING)
+        //7. I/O REQUEST
         //THEN WE CHECK THE NEAREST THING AND DO IT
 // CASE CHECKING 
         //CHECK TIME TO CASE 1
+        //需要额外检查五秒之内的新任务！！！！！！！！！等待修改
         int case1 = 1000000000; 
         int c1Process;
         for (int i = 0; i < pCount; i++)
@@ -254,6 +256,10 @@ void simulate_job_mix(int time_quantum)
                     c1Process = i;
                     case1 = 0;
                 }
+            }else if (pStartTime[i]>time-5&&pStartTime[i]<time)
+            {
+                c1Process = i;
+                case1 = -100;
             } else if (pStartTime[i]>time&&pStartTime[i]-time<case1)
             {
                 c1Process = i;
@@ -312,6 +318,8 @@ void simulate_job_mix(int time_quantum)
         int case6 = 1000000000;
         if (processOnCPU == -1&&nextR!=readyQEnd)
         {
+            if (CPUrunningTime>5) CPUrunningTime=0;
+            
             case6 = 5-CPUrunningTime;
         }
         
@@ -377,17 +385,19 @@ void simulate_job_mix(int time_quantum)
             break;
         case 4: //KEEP RUNNING UNTIL I/O REQUIST
             time += case2or3or4;//系统时间增加
-            if (processOnIO!=-1) devRunningTime+=case2or3or4;//I/O 时间增加
             processTime[processOnCPU] +=case2or3or4;//当前进程处理时间增加
             CPUrunningTime = 0;//CPU 处理时间 0
             //对应设备的队列加入本进程 根据 devQEnd判断 位置
             devQ[devID][devQEnd[devID]] = processOnCPU;
-            //查看当进程是否已经请求过数据总线（看当前事件是否是该进程的第一个） 若无时长加5
-            if (finishedIO[processOnCPU]==0)
-                devQDuration[devID][devQEnd[devID]]=devDuration+5;
-            else devQDuration[devID][devQEnd[devID]]=devDuration;
+            devQDuration[devID][devQEnd[devID]]=devDuration;
             //对应设备的队列时间信息加入本进程 位置同上
-            //devQEnd ++
+            //如果当前没有在进行的 I/O 进行新的请求 5秒中断
+            if (processOnIO!=-1) devRunningTime+=case2or3or4;//I/O 时间增加
+            else {
+                time += 5;
+                if (nextR!=readyQEnd) CPUrunningTime+=5;
+                processOnIO = processOnCPU;
+            }
             if (devQEnd[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
                 else  devQEnd[devID] = 0; 
             processOnCPU =-1;
@@ -415,18 +425,22 @@ void simulate_job_mix(int time_quantum)
             //设备 Ready 队列换成下一个
             if (nextD[devID]!=MAX_PROCESSES-1)  nextD[c5DevID]++;
                 else  nextD[c5DevID] = 0; 
-            //查看设备 Ready 队列（下一个任务）是否需要换进程（上下文切换） 是则处理时'-5'
-            devRunningTime = 0; //否则 I/O 时间归零
+            devRunningTime = 0; // I/O 时间归零
+            processOnIO = -1;
+            //查看设备 Ready 队列（下一个任务）是否有 是则系统时间加5
             //首先核实当 数据总线换进程使用时是否还需计算五秒钟的问题 
-            // for (int i = devID; i < devCount; i++)
-            // {
-            //     if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
-            //     {
-            //         continue;
-            //     }
-            //     if (c5Process != devQ[i][nextD[i]]) devRunningTime = -5;
-            //     break;
-            // }
+            for (int i = devID; i < devCount; i++)
+            {
+                if (nextD[i]==devQEnd[i])//THIS DEVICE HAS NO QUEUING PROCESS
+                {
+                    continue;
+                }
+                time +=5;
+                CPUrunningTime+=5;
+                processOnIO = devQ[i][nextD[i]];
+                break;
+            }
+            
             break;
         case 6: // MOVE READY TO RUNNING 切换上下文时间过后
             time += case6;//系统时间增加
@@ -438,7 +452,10 @@ void simulate_job_mix(int time_quantum)
             else  nextR = 0;
             //Ready 队列换成下一个
             break;
-                    
+
+        case 7:
+            time += 5;
+             break;       
         default:
             break;
         }
