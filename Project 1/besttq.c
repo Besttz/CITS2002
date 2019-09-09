@@ -46,7 +46,7 @@ int total_process_completion_time       = 1000000000;
 //  ----------------------------------------------------------------------
 //  THIS IS DATA STRUCTURE FOR STORING I/O DEVICES
 int devCount = 0;
-int devSpeed[MAX_DEVICES]; 
+float devSpeed[MAX_DEVICES]; 
 char devNames[MAX_DEVICES][MAX_DEVICE_NAME];
 //  Need to use strcpy(strs[0], devNames) to modify
 //  One Device is represented by a single index
@@ -99,7 +99,7 @@ void parse_tracefile (char program[], char tracefile[])
         if(nwords == 4 && strcmp(word0, "device") == 0) {
             // FOUND A DEVICE, WILL CHECK THE SPEED TO CALCULATE PRIOROTY
             // AND PUT IT IN THE RIGHT POSITION IN THE DEVICE ARRAY
-            int newSpeed = atoi(word2)*0.000001;
+            float newSpeed = (float)atoi(word2)*0.000001;
             int newID = 0;
             // Compare with current device list
             for (; newID < devCount; newID++) 
@@ -119,7 +119,7 @@ void parse_tracefile (char program[], char tracefile[])
         else if(nwords == 1 && strcmp(word0, "reboot") == 0) {
             printf("Totally %i Devices Added \n",devCount); // TEST PRINT
             for (int i = 0; i < devCount; i++) printf(
-                "    %i: %s, Speed is %i b/μs\n",i,devNames[i], devSpeed[i]); 
+                "    %i: %s, Speed is %f b/μs\n",i,devNames[i], devSpeed[i]); 
                 // TEST PRINT
             // NOTHING REALLY REQUIRED, DEVICE DEFINITIONS HAVE FINISHED
         }
