@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//需要更正总体运行时间不包括第一个进程开始前的 bug
 //需要根据示范程序调整 I/O 的时间计算
 
 /* CITS2002 Project 1 2019
@@ -150,7 +149,11 @@ void parse_tracefile (char program[], char tracefile[])
                     break;
                 }
             }
-            pEventDuration[pCount][currentEvent] = atoi(word3)/devSpeed[i];
+            float eventTimeTMP= atoi(word3)/devSpeed[i];
+            int eventTime= atoi(word3)/devSpeed[i];
+            if (eventTimeTMP>eventTime) eventTime +=1;
+            
+            pEventDuration[pCount][currentEvent] =eventTime;
                //  AN I/O EVENT FOR THE CURRENT PROCESS, STORE THIS SOMEWHERE
             printf("    Event %i Added, at %i time use %i %s for %iμs %ibyte.\n",
                     pEventNums[pCount],pEventTime[pCount][currentEvent],i,
@@ -232,7 +235,7 @@ void simulate_job_mix(int time_quantum)
         //5. BLOCKED -> READY(I/O FINISHED) 
         //6. READY->RUNNING(NO PROCESS RUNNING)
         //THEN WE CHECK THE NEAREST THING AND DO IT
-// CASE CHECKING !需要考虑上次切换上下文的状态!现在还没考虑完善 
+// CASE CHECKING 
         //CHECK TIME TO CASE 1
         int case1 = 1000000000; 
         int c1Process;
@@ -314,7 +317,6 @@ void simulate_job_mix(int time_quantum)
         
 
         //CHECK WHO IS THE CASE FOR THIS TIME(THE SMALLEST)
-        //!!!!!!CASE6
         int caseNo = 0;
         if((case6<case5) && (case6<case2or3or4) && (case6<case1)) caseNo = 6;
         else if((case5<case6) && (case5<case2or3or4) && (case5<case1))caseNo=5;
@@ -389,7 +391,6 @@ void simulate_job_mix(int time_quantum)
             if (devQEnd[devID]!=MAX_PROCESSES-1)  devQEnd[devID]++;
                 else  devQEnd[devID] = 0; 
             processOnCPU =-1;
-            /* code */
             break;
         case 5: // FINISH AN I/O REQUIST, BLOCK -> READY
             time += case5;//系统时间增加
