@@ -23,7 +23,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     FILE *vol	= fopen(volumename, "r+");
 
     //ENSURE THAT THE FILE IS OPENED
-    if(vol = NULL) {
+    if(vol == NULL) {
 	SIFS_errno	= SIFS_ENOTFILE;
 	return 1;
     }
