@@ -54,16 +54,16 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     SIFS_DIRBLOCK dir_block;
     memset(&dir_block, 0, sizeof dir_block); // cleared to all zeroes
 
-    dir_block.name[0] = pathname;
+    strcpy(dir_block.name,pathname);
     dir_block.modtime = time(NULL);
     dir_block.nentries = 0;
 
     // FIND THE PARENTS DIR BLOCK
     int parentBlockID = 0;
     // CHECK IF IT'S A SUBDIRECTORY
-    char * currentChar = pathname;
+    const char * currentChar = pathname;
     while(*currentChar == '/') ++currentChar; //SKIP THE FIRST '/'
-    while (*currentChar != '/0') // Check any '/' left
+    while (*currentChar != '\0') // Check any '/' left
     {
         if (*currentChar == '/')
         {
@@ -75,6 +75,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     currentChar = pathname;
     while(*currentChar == '/') ++currentChar;
     int currentCheckingBlock = 0;
+//下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
     while (parentBlockID == -1) //THIS DIR IS NOT WITHIN ROOTDIR
     {
         //  GET THE FIRST DIR NAME
@@ -83,7 +84,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         {
             *(newFolder+i) = *currentChar;
             currentChar++;
-            if (*currentChar = '/')
+            if (*currentChar == '/')
             {
                *(newFolder+i+1) = '\0';
                break;
@@ -98,7 +99,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         {
             if (bitmap[checking_dir_block.entries[i].blockID]=='d')
             {
-                /* code */
+                
+                
             }
              
         }
@@ -107,14 +109,26 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
          
         //  GET INTO THE FIRST DICTORY
     }
-
+//我们现在假设现在得到的 parentBlockID 就是需要建立新文件夹的目录
     // GET THIS BLOCK
+    SIFS_DIRBLOCK parentBlock;
+    fseek(vol,sizeof volHeader+sizeof bitmap+volHeader.blocksize*parentBlockID,SEEK_SET);
+    fread(&parentBlock,sizeof parentBlock, 1, vol);
     // ADD THE NEW ENTRIES
+    parentBlock.entries[parentBlock.nentries].blockID = index;
     // CHANGE THE MODTIME
+    parentBlock.modtime = time(NULL);
+    parentBlock.nentries++;
     // WRITE IT INTO THE FILE
+    fseek(vol,sizeof volHeader+sizeof bitmap+volHeader.blocksize*parentBlockID,SEEK_SET);
+    fwrite(&parentBlock, sizeof parentBlock, 1, vol);	// write rootdir
     // MOVE TO THE NEW BLOCK
+    fseek(vol,sizeof volHeader+sizeof bitmap+volHeader.blocksize*index,SEEK_SET);
     // WRITE THE NEW BLOCK
-
+    fwrite(&dir_block, sizeof dir_block, 1, vol);	// write rootdir
+    //  WRITE BIT MAP
+    fseek(vol,sizeof volHeader,SEEK_SET);
+    fwrite(&bitmap, sizeof bitmap, 1, vol);	
     //  FINISHED, CLOSE THE VOLUME
     fclose(vol);
 
