@@ -44,5 +44,11 @@ int main(int argcount, char *argvalue[])
 	exit(EXIT_FAILURE);
     }
 
+//  TEST THE MKDIR.C
+    if(SIFS_mkdir(volumename,"a") != 0) {
+	SIFS_perror(argvalue[0]);
+	exit(EXIT_FAILURE);
+    }
+    
     return EXIT_SUCCESS;
 }

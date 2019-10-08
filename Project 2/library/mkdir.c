@@ -28,6 +28,28 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 	return 1;
     }
 
+    // Read the first header of file.
+    SIFS_VOLUME_HEADER volHeader;
+    fread(&volHeader, sizeof volHeader,1,vol);
+    // Read current bitmap
+    SIFS_BIT	bitmap[volHeader.nblocks];
+    fread(&bitmap, sizeof bitmap,1,vol);
+    //Check which block is unused
+    int index = 0;
+    for (index = 0; index < volHeader.nblocks; index++)
+        if (bitmap[index]=='u')  break;
+    if (index==volHeader.nblocks)
+    {
+        SIFS_errno	= SIFS_ENOSPC;
+	    return 1;
+    }
+    //Change the bitmap as 'd'
+    bitmap[index]='d';
+    //Generate new dir block
+    
+    
+
+
 //  FINISHED, CLOSE THE VOLUME
     fclose(vol);
 
