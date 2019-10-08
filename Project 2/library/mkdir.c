@@ -1,8 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+#include "sifs-new.h"
 
-#include "sifs-internal.h"
 
 /* CITS2002 Project 2 2019
    Name(s):             Tommy Zhang, Zhenyu Yang
@@ -60,6 +57,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     // FIND THE PARENTS DIR BLOCK
     int parentBlockID = 0;
+//下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
     // CHECK IF IT'S A SUBDIRECTORY
     const char * currentChar = pathname;
     while(*currentChar == '/') ++currentChar; //SKIP THE FIRST '/'
@@ -75,7 +73,6 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     currentChar = pathname;
     while(*currentChar == '/') ++currentChar;
     int currentCheckingBlock = 0;
-//下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
     while (parentBlockID == -1) //THIS DIR IS NOT WITHIN ROOTDIR
     {
         //  GET THE FIRST DIR NAME

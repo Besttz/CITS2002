@@ -1,6 +1,6 @@
 PROJECT		= sifs
 
-HEADER		= $(PROJECT).h
+HEADER		= $(PROJECT).h sifs-new.h
 LIBRARY		= lib$(PROJECT).a
 
 APPLICATIONS	= sifs_mkvolume sifs_dirinfo
