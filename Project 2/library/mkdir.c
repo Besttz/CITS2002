@@ -57,55 +57,6 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     // FIND THE PARENTS DIR BLOCK
     int parentBlockID = 0;
-//下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
-    // CHECK IF IT'S A SUBDIRECTORY
-    const char * currentChar = pathname;
-    while(*currentChar == '/') ++currentChar; //SKIP THE FIRST '/'
-    while (*currentChar != '\0') // Check any '/' left
-    {
-        if (*currentChar == '/')
-        {
-            parentBlockID = -1;
-            break;
-        }
-        ++currentChar;
-    }
-    currentChar = pathname;
-    while(*currentChar == '/') ++currentChar;
-    int currentCheckingBlock = 0;
-    while (parentBlockID == -1) //THIS DIR IS NOT WITHIN ROOTDIR
-    {
-        //  GET THE FIRST DIR NAME
-        char newFolder[SIFS_MAX_NAME_LENGTH];
-        for (int i = 0; i < SIFS_MAX_NAME_LENGTH; i++)
-        {
-            *(newFolder+i) = *currentChar;
-            currentChar++;
-            if (*currentChar == '/')
-            {
-               *(newFolder+i+1) = '\0';
-               break;
-            }
-        } // NOW WE HAVE THE NAME OF CURRENT DIR TO FIND
-        //CHECK THE CURRENT CHECKING BLOCK AND FIND ALL SUB
-        SIFS_DIRBLOCK checking_dir_block;
-        fseek(vol,sizeof volHeader+sizeof bitmap+volHeader.blocksize*currentCheckingBlock,SEEK_SET);
-        fread(&checking_dir_block,sizeof checking_dir_block, 1, vol);
-        // NOW CHECK ITS ENTRIES WHICH IS DIRCTORY
-        for (int i = 0; i < SIFS_MAX_ENTRIES; i++)
-        {
-            if (bitmap[checking_dir_block.entries[i].blockID]=='d')
-            {
-                
-                
-            }
-             
-        }
-        
-        
-         
-        //  GET INTO THE FIRST DICTORY
-    }
 //我们现在假设现在得到的 parentBlockID 就是需要建立新文件夹的目录
     // GET THIS BLOCK
     SIFS_DIRBLOCK parentBlock;
