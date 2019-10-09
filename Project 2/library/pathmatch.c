@@ -117,7 +117,7 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
         for (i = 0; i < checking_dir_block.nentries; i++)
         {
             int checking = checking_dir_block.entries[i].blockID; //BLOCK ID GOING TO CHECK
-            if (bitmap[checking] == 'd') //THIS IS A DIR
+            if (bitmap[checking] == 'd')                          //THIS IS A DIR
             {
                 //GET INFO OF THIS DIR
                 SIFS_DIRBLOCK checking_block;
@@ -143,15 +143,19 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
                     parent = currentCheckingBlock;
                     currentCheckingBlock = checking;
                     break;
-
                 }
                 else
                     continue;
             }
         }
         // CAN NOT FIND OUR GOAL IN THIS FOLDER
-        if (endOfSearch == 1&&mode == 2) return currentCheckingBlock;
-        else if (mode == 0) return -1;
+        if (i == checking_dir_block.nentries)
+        {
+            if (endOfSearch == 1 && mode == 2)
+                return currentCheckingBlock;
+            else if (mode == 0)
+                return -1;
+        }
     }
 
     return -1;
