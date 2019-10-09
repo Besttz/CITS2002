@@ -172,7 +172,8 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
             if (endOfSearch == 1 && mode == 2)
             {
                 // printf("测试用 现在检索完毕 父文件夹 %s 并且没有在找的 %s. \n", checking_dir_block.name, thisOne);
-                if (strcmp(thisOne, "") == 0)  return parent;
+                if (strcmp(thisOne, "") == 0)
+                    return parent;
                 return currentCheckingBlock;
             }
             else if (mode == 0)

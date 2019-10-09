@@ -33,6 +33,18 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     fread(&bitmap, sizeof bitmap, 1, vol);
 
     int blockID = SIFS_pathmatch(volumename, pathname,0);
+    if (blockID == -1)
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    }
+    
+    if (bitmap[blockID] != 'd')
+    {
+        SIFS_errno = SIFS_ENOTDIR;
+        return 1;
+    }
+    
     SIFS_DIRBLOCK block;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * blockID, SEEK_SET);
     fread(&block, sizeof block, 1, vol);
