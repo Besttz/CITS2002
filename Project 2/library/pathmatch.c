@@ -14,7 +14,7 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
 
     //下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
     int parent = -1;
-    int result = 0;
+    int result = -1;
     // CHECK IF IT'S A SUBDIRECTORY
     const char *currentChar = pathname;
     while (*currentChar == '/')
@@ -43,32 +43,12 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
     currentChar = pathname;
     int currentCheckingBlock = 0;
     parent = 0;
+    char thisOne[SIFS_MAX_NAME_LENGTH];
+    int endOfSearch = 0;
+
     while (result == -1) //THIS DIR IS NOT WITHIN ROOTDIR
     {
-        while (*currentChar == '/')
-            ++currentChar;
-        // int currentSearching = 0; // 0 for file, 1 for dir
-
-        //  GET THE FIRST DIR NAME
-        char thisOne[SIFS_MAX_NAME_LENGTH];
-        int endOfSearch = 0;
-        for (int i = 0; i < SIFS_MAX_NAME_LENGTH; i++)
-        {
-            thisOne[i] = *currentChar;
-            currentChar++;
-            if (*currentChar == '/') // Found a floder
-            {
-                // currentSearching = 1;
-                thisOne[i + 1] = '\0';
-                break;
-            }
-            else if (*currentChar == '\0')
-            { //Found a floder (Or a ending floder)
-            endOfSearch = 1;
-                thisOne[i + 1] = '\0';
-                break;
-            }
-        } // NOW WE HAVE THE NAME TO FIND
+        //CHECK IF THE LAST "THISONE" MATCHES AND RETURN (HAPPENS IN THE END OF SEARCH)
         // CHECK IF CURRENT CHECKING BLOCK IS A FILE (CHECK THE NAME THEN)
         if (bitmap[currentCheckingBlock] == 'f')
             {
@@ -97,6 +77,31 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
                         if(mode == 1) return parent;
                     }
             }
+            //DONE
+
+        while (*currentChar == '/')
+            ++currentChar;
+        // int currentSearching = 0; // 0 for file, 1 for dir
+
+        //  GET THE FIRST DIR NAME
+        for (int i = 0; i < SIFS_MAX_NAME_LENGTH; i++)
+        {
+            thisOne[i] = *currentChar;
+            currentChar++;
+            
+            if (*currentChar == '\0')
+            { //Found a floder (Or a ending floder)
+            endOfSearch = 1;
+                thisOne[i + 1] = '\0';
+                break;
+            } else if (*currentChar == '/') // Found a floder
+            {
+                // currentSearching = 1;
+                thisOne[i + 1] = '\0';
+                break;
+            }
+        } // NOW WE HAVE THE NAME TO FIND
+        
             
         //CHECK THE CURRENT CHECKING BLOCK (Parent) AND FIND ALL SUB
         SIFS_DIRBLOCK checking_dir_block;
