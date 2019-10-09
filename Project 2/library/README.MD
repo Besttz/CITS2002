@@ -19,3 +19,18 @@ writefile.c
 readfile.c
 fileinfo.c
 rmfile.c
+
+
+
+
+更新日志 
+
+Project 2 4.0 2019-10-09 23:20:42
+迄今为止 mkdir dirinfo 和 pathmatch 基本的功能已经实现
+也没有发现什么致命 bug 明天需要完成 rmdir 的开发 并修复一些已知 bug
+1. mkdir 现在会接受不存在的路径 
+比如 /abc/ 目录是空的 但是 执行 mkdir /abc/ab/a 其实 ab 的路径查找是失败的 
+但 pathmatch 寻址时依然会返回 /abc/ 作为父目录的路径，结果就会导致创建 /abc/a/ 文件夹
+解决方案是修改 PathMatch mode 2 的流程，当出现 /abc/ab/a 的父目录查找，如果 /abc/ab/ 不存在需要直接返回 -1 
+
+其他的暂时没有发现错误信息
