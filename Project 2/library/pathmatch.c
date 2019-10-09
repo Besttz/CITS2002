@@ -12,9 +12,6 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
 {
     FILE *vol = fopen(volumename, "r");
 
-    //下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
-    int parent = -1;
-    int result = -1;
     // CHECK IF IT'S A SUBDIRECTORY
     const char *currentChar = pathname;
     while (*currentChar == '/')
@@ -25,96 +22,104 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
     while (*currentChar != '\0') // Check any '/' left
     {
         if (*currentChar == '/')
-        {
-            result = -1;
             break;
-        }
         ++currentChar;
     }
     if (*currentChar == '\0' && mode == 2) //This address is in root
         return 0;
 
+    //  START TO READ FILE
     SIFS_VOLUME_HEADER volHeader;
     fread(&volHeader, sizeof volHeader, 1, vol);
     // Read current bitmap
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
 
+    //  START TO SEARCH
     currentChar = pathname;
     int currentCheckingBlock = 0;
-    parent = 0;
-    char thisOne[SIFS_MAX_NAME_LENGTH];
-    int endOfSearch = 0;
+    int parent = -1;
+    char thisOne[SIFS_MAX_NAME_LENGTH]; // CURRENT SEARCHING NAME
+    int endOfSearch = 0;                //THIS IS THE LAST TO SEARCH
 
-    while (result == -1) //THIS DIR IS NOT WITHIN ROOTDIR
+    while (1) //LOOP TO SEARCH
     {
-        //CHECK IF THE LAST "THISONE" MATCHES AND RETURN (HAPPENS IN THE END OF SEARCH)
-        // CHECK IF CURRENT CHECKING BLOCK IS A FILE (CHECK THE NAME THEN)
-        if (bitmap[currentCheckingBlock] == 'f')
+        //  CHECK IF THE LAST "THISONE" MATCHES AND RETURN (HAPPENS IN THE END OF SEARCH)
+        //  CHECK IF CURRENT CHECKING BLOCK IS A FILE (CHECK THE NAME THEN)
+        if (bitmap[currentCheckingBlock] == 'f') // CHECKING A FILE (MEANS END OF SEARCH)
+        {
+            //  GET THE INFO OF FILE
+            SIFS_FILEBLOCK checking_block;
+            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * currentCheckingBlock, SEEK_SET);
+            fread(&checking_block, sizeof checking_block, 1, vol);
+            int i = 0;
+            //  COMPARE FILE NAME
+            for (i = 0; i < SIFS_MAX_ENTRIES; i++)
             {
-                SIFS_FILEBLOCK checking_block;
-                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * currentCheckingBlock, SEEK_SET);
-                fread(&checking_block, sizeof checking_block, 1, vol);
-                int i = 0;
-                for ( i = 0; i < SIFS_MAX_ENTRIES; i++)
+                if (strcmp(checking_block.filenames[i], thisOne) == 0)
                 {
-                    if (strcmp(checking_block.filenames[i],thisOne)==0)
-                    {
-                        if(mode == 0) return currentCheckingBlock;
-                        if(mode == 1) return parent;
-                    }  
+                    if (mode == 0)
+                        return currentCheckingBlock;
+                    if (mode == 1)
+                        return parent;
                 }
-                if (i == SIFS_MAX_ENTRIES) return -1; // CANNOT FIND  
             }
-            else if (endOfSearch == 1 &&bitmap[currentCheckingBlock] == 'd')
+            if (i == SIFS_MAX_ENTRIES)
+                return -1; // NAME DOSNOT MATCH, CANNOT FIND
+        }
+        else if (endOfSearch == 1 && bitmap[currentCheckingBlock] == 'd')
+        {
+            //  GET THE INFO OF DIR
+            SIFS_DIRBLOCK checking_block;
+            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * currentCheckingBlock, SEEK_SET);
+            fread(&checking_block, sizeof checking_block, 1, vol);
+            //  COMPARE  NAME
+            if (strcmp(checking_block.name, thisOne) == 0)
             {
-                SIFS_DIRBLOCK checking_block;
-                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * currentCheckingBlock, SEEK_SET);
-                fread(&checking_block, sizeof checking_block, 1, vol);
-                 if (strcmp(checking_block.name,thisOne)==0)
-                    {
-                        if(mode == 0) return currentCheckingBlock;
-                        if(mode == 1) return parent;
-                    }
+                if (mode == 0)
+                    return currentCheckingBlock;
+                if (mode == 1)
+                    return parent;
             }
-            //DONE
+        }
+        //END OF "END OF SEARCH" COMPARE
 
         while (*currentChar == '/')
-            ++currentChar;
-        // int currentSearching = 0; // 0 for file, 1 for dir
+            ++currentChar; // DELETED THE '/'
 
-        //  GET THE FIRST DIR NAME
+        //  GET THE NAME TO SEARCH IN THIS ROUND
         for (int i = 0; i < SIFS_MAX_NAME_LENGTH; i++)
         {
             thisOne[i] = *currentChar;
             currentChar++;
-            
+
             if (*currentChar == '\0')
-            { //Found a floder (Or a ending floder)
-            endOfSearch = 1;
+            { //Found a file (Or a ending floder)
+                endOfSearch = 1;
                 thisOne[i + 1] = '\0';
                 break;
-            } else if (*currentChar == '/') // Found a floder
+            }
+            else if (*currentChar == '/') // Found a floder
             {
                 // currentSearching = 1;
                 thisOne[i + 1] = '\0';
                 break;
             }
         } // NOW WE HAVE THE NAME TO FIND
-        
-            
+
         //CHECK THE CURRENT CHECKING BLOCK (Parent) AND FIND ALL SUB
         SIFS_DIRBLOCK checking_dir_block;
         fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * currentCheckingBlock, SEEK_SET);
         fread(&checking_dir_block, sizeof checking_dir_block, 1, vol);
         // NOW CHECK ITS ENTRIES TO COMPARE THE NAME
-        // char entryname[checking_dir_block.nentries][SIFS_MAX_NAME_LENGTH];
+
         int i = 0;
         for (i = 0; i < checking_dir_block.nentries; i++)
         {
-            int checking = checking_dir_block.entries[i].blockID;
-            if (bitmap[checking] == 'd')
+            int checking = checking_dir_block.entries[i].blockID; //BLOCK ID GOING TO CHECK
+            if (bitmap[checking] == 'd') //THIS IS A DIR
             {
+                //GET INFO OF THIS DIR
                 SIFS_DIRBLOCK checking_block;
                 fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * checking, SEEK_SET);
                 fread(&checking_block, sizeof checking_block, 1, vol);
@@ -123,13 +128,11 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
                     parent = currentCheckingBlock;
                     currentCheckingBlock = checking;
                     break;
-                    //    if(mode == 0) return checking;
-                    //    if(mode == 1) return parent;
                 }
                 else
                     continue;
             }
-            else if (bitmap[checking] == 'f')
+            else if (bitmap[checking] == 'f') // THIS IS A FILE
             {
                 int fileNameIndex = checking_dir_block.entries[i].fileindex;
                 SIFS_FILEBLOCK checking_block;
@@ -140,23 +143,16 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
                     parent = currentCheckingBlock;
                     currentCheckingBlock = checking;
                     break;
-                    //    if(mode == 0) return checking;
-                    //    if(mode == 1) return parent;
+
                 }
                 else
                     continue;
             }
         }
-        if (i == checking_dir_block.nentries && mode == 2)
-        {
-           return currentCheckingBlock;
-        }
-        
-
-
-        //  GET INTO THE FIRST DICTORY
+        // CAN NOT FIND OUR GOAL IN THIS FOLDER
+        if (endOfSearch == 1&&mode == 2) return currentCheckingBlock;
+        else if (mode == 0) return -1;
     }
-    //我们现在假设现在得到的 parentBlockID 就是需要建立新文件夹的目录
 
-    return 0;
+    return -1;
 }
