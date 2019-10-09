@@ -32,9 +32,6 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
 
-    //下面的内容是多层目录的支持，先把其他的功能写完之后再写这个
-    // 已经把将要写的内容转移到 pathmatch 到时候直接调用就可
-    //我们现在假设现在得到的 blockID 就是文件夹的目录
     int blockID = SIFS_pathmatch(volumename, pathname,0);
     SIFS_DIRBLOCK block;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * blockID, SEEK_SET);
