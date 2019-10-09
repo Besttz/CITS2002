@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build",
+            "command": "/usr/bin/gcc",
+            "args": [
+                "-g",
+                "${file}",
+                "library/dirinfo.c",
+                "library/perror.c","library/pathmatch.c","library/fileinfo.c",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "/Users/22181467/Downloads/CITS2002/Project 2/"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
