@@ -9,13 +9,13 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["aa","1024","10"],
-            "stopAtEntry": true,
+            "args": ["D","10"],
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "build2"
+            "preLaunchTask": "build"
         }
     ]
 }

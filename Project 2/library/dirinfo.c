@@ -41,28 +41,41 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     fread(&block, sizeof block, 1, vol);
     *nentries = block.nentries;
     *modtime = block.modtime;
-    for (int i = 0; i < block.nentries; i++)
+    char **entryname = NULL;
+    // char ** entryname = (char **)calloc(*nentries,sizeof(char)*SIFS_MAX_NAME_LENGTH);
+    if (block.nentries > 0)
     {
-        int checkingBlockID = block.entries[i].blockID;
-        if (bitmap[checkingBlockID] == 'd')
-        {
-            SIFS_DIRBLOCK newBlock;
-            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * checkingBlockID, SEEK_SET);
-            fread(&newBlock, sizeof newBlock, 1, vol);
-            strcpy(*entrynames[i], newBlock.name);
-        }
-        else if (bitmap[checkingBlockID] == 'f')
-        {
-            SIFS_FILEBLOCK newBlock;
-            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * checkingBlockID, SEEK_SET);
-            fread(&newBlock, sizeof newBlock, 1, vol);
-            strcpy(*entrynames[i], newBlock.filenames[block.entries[i].fileindex]);
-        }
+        entryname  = realloc(entryname, block.nentries * sizeof(char)*SIFS_MAX_NAME_LENGTH);
 
+        for (int i = 0; i < block.nentries; i++)
+        {
+            int checkingBlockID = block.entries[i].blockID;
+            if (bitmap[checkingBlockID] == 'd')
+            {
+                SIFS_DIRBLOCK newBlock;
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * checkingBlockID, SEEK_SET);
+                fread(&newBlock, sizeof newBlock, 1, vol);
+                // entryname[i] = "abc";
+                entryname[i] = strdup(newBlock.name);
+                // strcpy(entryname + i, newBlock.name);
+            }
+            else if (bitmap[checkingBlockID] == 'f')
+            {
+                SIFS_FILEBLOCK newBlock;
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * checkingBlockID, SEEK_SET);
+                fread(&newBlock, sizeof newBlock, 1, vol);
+                // entryname[i] = "abc";
+                entryname[i] = strdup(newBlock.filenames[block.entries[i].fileindex]);
+                // strcpy(entryname + i, newBlock.filenames[block.entries[i].fileindex]);
+            }
+        }
     }
-        //  FINISHED, CLOSE THE VOLUME
+    *entrynames = entryname;
+    // memcpy(*entrynames,*entryname,sizeof entryname);
 
-        fclose(vol);
+    //  FINISHED, CLOSE THE VOLUME
+
+    fclose(vol);
 
     return 0;
 }
