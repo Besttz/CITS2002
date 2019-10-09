@@ -101,11 +101,29 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
             }
             else if (*currentChar == '/') // Found a floder
             {
+                while (*(currentChar + 1) == '/')
+                    currentChar++;
+                if (*(currentChar + 1) == '\0')
+                { //Found a file (Or a ending floder)
+                    endOfSearch = 1;
+                    thisOne[i + 1] = '\0';
+                    break;
+                }
+
                 // currentSearching = 1;
                 thisOne[i + 1] = '\0';
                 break;
             }
         } // NOW WE HAVE THE NAME TO FIND
+
+        if (strcmp(thisOne, "") == 0) //Current Finding Nothing
+        {
+            //  Which means it's in the right floder rightnow
+            if (mode == 0)
+                return currentCheckingBlock;
+            if (mode == 1)
+                return parent;
+        }
 
         //CHECK THE CURRENT CHECKING BLOCK (Parent) AND FIND ALL SUB
         SIFS_DIRBLOCK checking_dir_block;
@@ -152,7 +170,11 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
         if (i == checking_dir_block.nentries)
         {
             if (endOfSearch == 1 && mode == 2)
+            {
+                // printf("测试用 现在检索完毕 父文件夹 %s 并且没有在找的 %s. \n", checking_dir_block.name, thisOne);
+                if (strcmp(thisOne, "") == 0)  return parent;
                 return currentCheckingBlock;
+            }
             else if (mode == 0)
                 return -1;
         }
