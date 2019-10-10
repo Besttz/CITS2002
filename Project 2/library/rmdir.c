@@ -44,12 +44,6 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_ENOTDIR;
         return 1;
     }
-    //  CHANGE THIS BLOCK TO UNUSED
-    bitmap[removeID] = 'u';
-    //  WRIT THE NEW BITMAP
-    fseek(vol, sizeof volHeader, SEEK_SET);
-    fwrite(&bitmap, sizeof bitmap, 1, vol);
-
     //  CHECK IF THIS DIR IS EMPTY
     SIFS_DIRBLOCK block;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * removeID, SEEK_SET);
@@ -59,6 +53,14 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_ENOTEMPTY;
         return 1;
     }
+    
+    //  CHANGE THIS BLOCK TO UNUSED
+    bitmap[removeID] = 'u';
+    //  WRIT THE NEW BITMAP
+    fseek(vol, sizeof volHeader, SEEK_SET);
+    fwrite(&bitmap, sizeof bitmap, 1, vol);
+
+    
 
     //  FILL THIS BLOCK WITH 0
     // char clearBlock[volHeader.blocksize];
