@@ -33,6 +33,20 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
 
+    //  FIND THE PARENTS DIR BLOCK
+    int parentBlockID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_PARENT_FOR_NEW);
+    if (parentBlockID==-1) //THE PARENT BLOCK ISN'T EXIST
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    }
+    //  CHECK IF THIS DIR ALREADY EXISTS
+    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE)!=-1) //THE PARENT BLOCK ISN'T EXIST
+    {
+        SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
+
     //Check which block is unused
     int index = 0;
     for (index = 0; index < volHeader.nblocks; index++)
@@ -51,7 +65,6 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     SIFS_DIRBLOCK dir_block;
     memset(&dir_block, 0, sizeof dir_block); // cleared to all zeroes
     int len = strlen(pathname) - 1;
-    // printf("LENTH OF PATHNAME -1 : %i \n", len); // FOR DEBUG HAVE TO DELETEEEEEEEEEEEEEEEEE!
     char tempName[SIFS_MAX_NAME_LENGTH];
     char newName[SIFS_MAX_NAME_LENGTH];
     while (pathname[len] == '/') len--;
@@ -65,28 +78,19 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         tempName[len - i] = pathname[i];
     }
     tempName[len+1] = '\0';
-    // printf("tempName: %s \n", tempName); // FOR DEBUG HAVE TO DELETEEEEEEEEEEEEEEEEE!
     int newlen = strlen(tempName) - 1;
     for (int i = 0; i <= newlen; i++)
         newName[i] = tempName[newlen - i];
     newName[newlen+1] = '\0';
 
     strcpy(dir_block.name, newName);
-    printf("NEW NAME IS: %s \n", newName); // FOR DEBUG HAVE TO DELETEEEEEEEEEEEEEEEEE!
     dir_block.modtime = time(NULL);
     dir_block.nentries = 0;
 
     //  DONE
-    // FIND THE PARENTS DIR BLOCK
-    int parentBlockID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_PARENT_FOR_NEW);
-    if (parentBlockID==-1) //THE PARENT BLOCK ISN'T EXIST
-    {
-        SIFS_errno = SIFS_ENOENT;
-        return 1;
-    }
+
     
-    //我们现在假设现在得到的 parentBlockID 就是需要建立新文件夹的目录
-    // GET THIS BLOCK
+    // GET THE PARENTS DIR BLOCK
     SIFS_DIRBLOCK parentBlock;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentBlockID, SEEK_SET);
     fread(&parentBlock, sizeof parentBlock, 1, vol);

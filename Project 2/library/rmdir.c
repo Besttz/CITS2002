@@ -92,6 +92,9 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentID, SEEK_SET);
     fwrite(&block, sizeof block, 1, vol); // write rootdir
 
+    //  REMOVE THE FRAGMENT 
+    SIFS_defrag(volumename);
+
     //  FINISHED, CLOSE THE VOLUME
     fclose(vol);
 

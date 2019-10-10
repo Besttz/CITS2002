@@ -42,7 +42,7 @@ int SIFS_defrag(const char *volumename)
         for (; i >= 0; i--)
         {
             if (foundThings == 0 && bitmap[i] != 'u')
-                foundThings = 1; //FIRST TIME FOUND BLOCK NOT BLANK
+                foundThings = 1;  //FIRST TIME FOUND BLOCK NOT BLANK
             else if (foundThings) //ALREADY INSIDE THE USED BLOCKS
             {
                 if (fragEnd == -1 && bitmap[i] == 'u')
@@ -103,6 +103,27 @@ int SIFS_defrag(const char *volumename)
         memset(oneblock, 0, sizeof oneblock); // reset to all zeroes
         for (; i < volHeader.nblocks; i++)
             fwrite(oneblock, sizeof oneblock, 1, vol);
+
+        //  NOW NEED TO CHANGE ALL THE BLOCK ID OF ENTRIES
+        SIFS_DIRBLOCK block; // TO STORE DIR BLOCK GOING TO BE CHANGED
+
+        for (i = 0; i < volHeader.nblocks; i++)
+        {
+            if (bitmap[i] != 'd')
+                continue; // SKIP THE BLOCK NOT DIR
+            //  GET THE BLOCK
+            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+            fread(&block, sizeof block, 1, vol);
+            if (block.nentries == 0)
+                continue; // SKIP DIR WITH NO ENTRY
+            for (int j = 0; j < block.nentries; j++)
+                if (block.entries[j].blockID > fragBegin)
+                    block.entries[j].blockID -= fragLen;
+            //  WRITE THE BLOCK BACK
+            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+            fwrite(&block, sizeof block, 1, vol);
+
+        }
     }
 
     //  FINISHED, CLOSE THE VOLUME
