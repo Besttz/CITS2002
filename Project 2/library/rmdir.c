@@ -69,7 +69,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
 
     // GET THE PARENT BLOCK
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentID, SEEK_SET);
-    fread(&block, sizeof removeID, 1, vol);
+    fread(&block, sizeof block, 1, vol);
     block.nentries--;
     int i = 0;
     for (; i < block.nentries; i++)
