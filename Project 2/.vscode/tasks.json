@@ -10,8 +10,9 @@
             "args": [
                 "-g",
                 "${file}",
-                "library/dirinfo.c",
-                "library/perror.c","library/pathmatch.c","library/fileinfo.c",
+                // "library/dirinfo.c",
+                // "library/perror.c","library/pathmatch.c","library/fileinfo.c",
+                "library/*.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

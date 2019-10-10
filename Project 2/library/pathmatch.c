@@ -169,15 +169,21 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
         // CAN NOT FIND OUR GOAL IN THIS FOLDER
         if (i == checking_dir_block.nentries)
         {
-            if (endOfSearch == 1 && mode == 2)
+            if (endOfSearch == 0)
+                return -1;
+            else if (mode == 2)
             {
                 // printf("测试用 现在检索完毕 父文件夹 %s 并且没有在找的 %s. \n", checking_dir_block.name, thisOne);
                 if (strcmp(thisOne, "") == 0)
                     return parent;
                 return currentCheckingBlock;
-            }
-            else if (mode == 0)
+            } else
+            {
                 return -1;
+            }
+            
+             
+                
         }
     }
 

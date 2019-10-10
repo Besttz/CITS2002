@@ -79,6 +79,12 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     //  DONE
     // FIND THE PARENTS DIR BLOCK
     int parentBlockID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_PARENT_FOR_NEW);
+    if (parentBlockID==-1) //THE PARENT BLOCK ISN'T EXIST
+    {
+        SIFS_errno = SIFS_ENOENT;
+        return 1;
+    }
+    
     //我们现在假设现在得到的 parentBlockID 就是需要建立新文件夹的目录
     // GET THIS BLOCK
     SIFS_DIRBLOCK parentBlock;
