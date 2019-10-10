@@ -30,7 +30,7 @@ rmfile.c
 Project 2 4.0 2019-10-09 23:20:42
 迄今为止 mkdir dirinfo 和 pathmatch 基本的功能已经实现
 也没有发现什么致命 bug 明天需要完成 rmdir 的开发 并修复一些已知 bug
-1. mkdir 现在会接受不存在的路径  （尚未修复）
+1. mkdir 现在会接受不存在的路径 
     比如 /abc/ 目录是空的 但是 执行 mkdir /abc/ab/a 其实 ab 的路径查找是失败的 
     但 pathmatch 寻址时依然会返回 /abc/ 作为父目录的路径，结果就会导致创建 /abc/a/ 文件夹
     解决方案是修改 PathMatch mode 2 的流程，当出现 /abc/ab/a 的父目录查找，如果 /abc/ab/ 不存在需要直接返回 -1 
@@ -46,4 +46,5 @@ Project 2 4.9 2019-10-10 16:26
 
 Project 2 4.9.1 2019-10-10 17:02
 更新了 mkdir 和 pathmatch 不再接受不存在的路径 
-当 pathmatch 需要求一个父目录不存在的路径的目录时
+当 pathmatch 需要求一个父目录不存在的路径的目录时返回-1 已知bug 如下
+2. rmdir 完成删除之后会 Segmentation fault: 11 （尚未修复）
