@@ -55,5 +55,10 @@ int main(int argcount, char *argvalue[])
         printf("Block ID of Parent is : %i \n", SIFS_pathmatch(volumename, pathname, 2));
         printf("Block ID is : %i \n", SIFS_pathmatch(volumename, pathname, 0));
     }
+    else if (strcmp(order, "defrag") == 0)
+    {
+        SIFS_defrag(volumename);
+    }
+    
     return 0;
 }

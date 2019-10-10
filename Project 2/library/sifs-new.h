@@ -9,3 +9,5 @@
 #define SIFS_PATH_PARENT_FOR_NEW 2
 
 extern int SIFS_pathmatch(const char *volumename, const char *pathname, int mode);
+extern int SIFS_defrag(const char *volumename);
+
