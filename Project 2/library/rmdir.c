@@ -23,7 +23,12 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
 
     //  CHECK IF THIS PATH LEGAL
     int removeID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE);
-    if (removeID == -1) //CANNOT FIND THIS PATHNAME
+    if (removeID == 0) //THE PATH IS ROOTDIR CAN'T BE DELETED
+    {
+        SIFS_errno = SIFS_ENOTDIR;
+        return 1;
+    }
+    else if (removeID == -1) //CANNOT FIND THIS PATHNAME
     {
         SIFS_errno = SIFS_ENOENT;
         return 1;
@@ -53,7 +58,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_ENOTEMPTY;
         return 1;
     }
-    
+
     //  CHANGE THIS BLOCK TO UNUSED
     bitmap[removeID] = 'u';
     //  WRIT THE NEW BITMAP

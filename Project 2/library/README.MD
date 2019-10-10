@@ -48,3 +48,7 @@ Project 2 4.9.1 2019-10-10 17:02
 更新了 mkdir 和 pathmatch 不再接受不存在的路径 
 当 pathmatch 需要求一个父目录不存在的路径的目录时返回-1 已知bug 如下
 2. rmdir 完成删除之后会 Segmentation fault: 11 （尚未修复）
+
+Project 2 5.0 2019-10-10 19:30
+修复了上述 bug 现在开始写 file
+
