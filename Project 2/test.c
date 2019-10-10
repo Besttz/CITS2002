@@ -39,7 +39,7 @@ int main(int argcount, char *argvalue[])
     }
     else if (strcmp(order, "mkvolume") == 0)
     {
-        if (SIFS_mkvolume(volumename, argvalue[2], argvalue[3]) != 0)
+        if (SIFS_mkvolume(volumename, atoi(argvalue[2]), atoi(argvalue[3])) != 0)
         {
             SIFS_perror(argvalue[0]);
             exit(EXIT_FAILURE);
