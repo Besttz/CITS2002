@@ -53,7 +53,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     //  CHECK IF THIS DIR IS EMPTY
     SIFS_DIRBLOCK block;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * removeID, SEEK_SET);
-    fread(&block, sizeof removeID, 1, vol);
+    fread(&block, sizeof block, 1, vol);
     if (block.nentries != 0)
     {
         SIFS_errno = SIFS_ENOTEMPTY;
