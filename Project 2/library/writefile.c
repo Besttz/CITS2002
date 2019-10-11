@@ -26,20 +26,19 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }
 
+    //  CHECK IF THIS  ALREADY EXISTS
+    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE) != -1)
+    {
+        fclose(vol);
+        SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
     //  FIND THE PARENTS DIR BLOCK
     int parentBlockID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_PARENT_FOR_NEW);
     if (parentBlockID == -1) //THE PARENT BLOCK ISN'T EXIST
     {
         fclose(vol);
         SIFS_errno = SIFS_ENOENT;
-        return 1;
-    }
-    
-    //  CHECK IF THIS  ALREADY EXISTS
-    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE) != -1) 
-    {
-        fclose(vol);
-        SIFS_errno = SIFS_EEXIST;
         return 1;
     }
 
@@ -77,11 +76,12 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         return 1;
     }
 
+    //  ALL THE ENVIRONMENT CHECK IS DONE
     //  GET MD5 OF FILE GOING TO WRITE
     void *newMD5raw = calloc(1, MD5_BYTELEN);
     MD5_buffer(data, nbytes, newMD5raw);
-    char newMD5[MD5_STRLEN+1];
-    strcpy(newMD5,MD5_format(newMD5raw));
+    char newMD5[MD5_STRLEN + 1];
+    strcpy(newMD5, MD5_format(newMD5raw));
 
     //  CHECK MD5 WITH ALL FILES CHECK IF ALREADY EXIST
     for (int i = 0; i < volHeader.nblocks; i++)
@@ -92,9 +92,9 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_FILEBLOCK fileBlock;
         fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
         fread(&fileBlock, sizeof fileBlock, 1, vol);
-        
-        char checkingMD5[MD5_STRLEN+1];
-        strcpy(checkingMD5,MD5_format(fileBlock.md5));
+
+        char checkingMD5[MD5_STRLEN + 1];
+        strcpy(checkingMD5, MD5_format(fileBlock.md5));
 
         if (strcmp(newMD5, checkingMD5) == 0) //MATCH THE MD5
         {
@@ -148,7 +148,8 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         fwrite(&fileBlock, sizeof fileBlock, 1, vol); // write BLOCK
 
         //  WRITE THE DATA BLOCK
-        fwrite(data, nbytes, 1, vol);//CHANGE
+        fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * (fileBlockID + 1), SEEK_SET);
+        fwrite(data, nbytes, 1, vol);
     }
     else //THE FILE IS EXIST
     {

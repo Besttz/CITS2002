@@ -57,9 +57,12 @@ int main(int argcount, char *argvalue[])
         // GET THE SIZE OF FILE TO WHITE
         fseek(vol, 0L, SEEK_END);
         int size = ftell(vol);
-        printf("GET SIZE! %i \n",size);
+        fseek(vol, 0L, SEEK_SET);
+        char dataArea[size];
+        memset(dataArea,0,size);
+        fread(dataArea, size, 1, vol);
 
-        if (SIFS_writefile(volumename, argvalue[4], vol, size) != 0)
+        if (SIFS_writefile(volumename, argvalue[4], dataArea, size) != 0)
         {
             SIFS_perror(argvalue[0]);
             exit(EXIT_FAILURE);
