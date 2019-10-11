@@ -34,6 +34,14 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_ENOENT;
         return 1;
     }
+    
+    //  CHECK IF THIS  ALREADY EXISTS
+    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE) != -1) 
+    {
+        fclose(vol);
+        SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
 
     //  VARIABLES DECLARATION
     int fileBlockID = -1;
@@ -140,7 +148,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         fwrite(&fileBlock, sizeof fileBlock, 1, vol); // write BLOCK
 
         //  WRITE THE DATA BLOCK
-        fwrite(data, nbytes, 1, vol);
+        fwrite(data, nbytes, 1, vol);//CHANGE
     }
     else //THE FILE IS EXIST
     {
@@ -161,6 +169,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     parentBlock.modtime = time(NULL);
     parentBlock.entries[parentBlock.nentries].blockID = fileBlockID;
     parentBlock.entries[parentBlock.nentries].fileindex = fileNameID;
+    parentBlock.nentries++;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentBlockID, SEEK_SET);
     fwrite(&parentBlock, sizeof parentBlock, 1, vol);
 
