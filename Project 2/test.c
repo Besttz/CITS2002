@@ -47,8 +47,23 @@ int main(int argcount, char *argvalue[])
     }
     else if (strcmp(order, "writefile") == 0)
     {
-        printf("NOT PREPARED! \n");
-        exit(EXIT_FAILURE);
+        FILE *vol = fopen(pathname, "r");
+        if (vol == NULL)
+        {
+            printf("%s: CAN'T OPEN THE FILE. \n", argvalue[0]);
+            return 1;
+        }
+        printf("OPENED! \n");
+        // GET THE SIZE OF FILE TO WHITE
+        fseek(vol, 0L, SEEK_END);
+        int size = ftell(vol);
+        printf("GET SIZE! %i \n",size);
+
+        if (SIFS_writefile(volumename, argvalue[4], vol, size) != 0)
+        {
+            SIFS_perror(argvalue[0]);
+            exit(EXIT_FAILURE);
+        }
     }
     else if (strcmp(order, "pathmatch") == 0)
     {
@@ -59,6 +74,6 @@ int main(int argcount, char *argvalue[])
     {
         SIFS_defrag(volumename);
     }
-    
+
     return 0;
 }

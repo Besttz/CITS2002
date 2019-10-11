@@ -72,18 +72,23 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     //  GET MD5 OF FILE GOING TO WRITE
     void *newMD5raw = calloc(1, MD5_BYTELEN);
     MD5_buffer(data, nbytes, newMD5raw);
-    char *newMD5 = MD5_format(newMD5raw);
+    char newMD5[MD5_STRLEN+1];
+    strcpy(newMD5,MD5_format(newMD5raw));
 
     //  CHECK MD5 WITH ALL FILES CHECK IF ALREADY EXIST
     for (int i = 0; i < volHeader.nblocks; i++)
     {
-        if (bitmap[i] != 'f')
+        if (bitmap[i] != SIFS_FILE)
             continue; // SKIP BLOCK NOT FILE
         //  GET THE FILE BLOCK
         SIFS_FILEBLOCK fileBlock;
         fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
         fread(&fileBlock, sizeof fileBlock, 1, vol);
-        if (strcmp(newMD5, (char *)fileBlock.md5) == 0) //MATCH THE MD5
+        
+        char checkingMD5[MD5_STRLEN+1];
+        strcpy(checkingMD5,MD5_format(fileBlock.md5));
+
+        if (strcmp(newMD5, checkingMD5) == 0) //MATCH THE MD5
         {
             fileBlockID = i;
             break;
@@ -123,7 +128,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         //  BUILD THE FILE BLOCK
         SIFS_FILEBLOCK fileBlock;
         fileBlock.modtime = time(NULL);
-        strcpy((char *)fileBlock.md5, newMD5);
+        memcpy(fileBlock.md5, newMD5raw, MD5_BYTELEN);
         fileBlock.length = nbytes;
         fileBlock.firstblockID = fileBlockID + 1;
         fileBlock.nfiles = 1;
