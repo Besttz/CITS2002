@@ -1,5 +1,10 @@
 #include "sifs-new.h"
 
+/* CITS2002 Project 2 2019
+   Name(s):             Tommy Zhang, Zhenyu Yang
+   Student number(s):   22181467 22374571
+ */
+
 // add a copy of a new file to an existing volume
 int SIFS_writefile(const char *volumename, const char *pathname,
                    void *data, size_t nbytes)

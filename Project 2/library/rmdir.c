@@ -65,8 +65,6 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     fseek(vol, sizeof volHeader, SEEK_SET);
     fwrite(&bitmap, sizeof bitmap, 1, vol);
 
-    
-
     //  FILL THIS BLOCK WITH 0
     // char clearBlock[volHeader.blocksize];
     memset(&block, 0, sizeof block); // reset to all zeroes
@@ -88,15 +86,16 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     for (; i < block.nentries; i++)
         block.entries[i] = block.entries[i + 1];
 
-     //  WRITE THE NEW BLOCK INTO FILE
+    //  WRITE THE NEW BLOCK INTO FILE
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentID, SEEK_SET);
     fwrite(&block, sizeof block, 1, vol); // write rootdir
 
-    //  REMOVE THE FRAGMENT 
-    SIFS_defrag(volumename);
-
     //  FINISHED, CLOSE THE VOLUME
     fclose(vol);
+
+    //  REMOVE THE FRAGMENT
+    if (SIFS_defrag(volumename) != 0)
+        return 1;
 
     //  AND RETURN INDICATING SUCCESS
     return 0;
