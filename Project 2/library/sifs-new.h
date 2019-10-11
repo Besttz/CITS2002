@@ -10,4 +10,5 @@
 
 extern int SIFS_pathmatch(const char *volumename, const char *pathname, int mode);
 extern int SIFS_defrag(const char *volumename);
+extern int SIFS_lastname(const char *pathname, char* lastname);
 

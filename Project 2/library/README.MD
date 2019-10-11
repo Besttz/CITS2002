@@ -18,6 +18,19 @@ rmdir.c
 10 月 10 日前弄完 上面三个文件夹的功能后再考虑文件。
 
 writefile.c
+本功能需要读取文件并写入到 volume，首先尝试以读写的方式打开文件，如果出现异常即退出。然后首先检查路径是否正确。并记录下父目录地的 ID，读取文件开头的前两块，检查父目录是否可以放下新的 entry。然后检查文件的 md5，之后 loop 所有的文件块查看文件是否已经有了
+如果没有 并找到第一个没有使用的 block 并记录下 ID 这将会是新文件块，并且使用文件大小除以单块大小 计算需要几个块，然后检查起始块+1（文件头）+文件需要块是否大于等于块数，如果大于即返回储存空间不足。 然后开始做文件头 写入所有的信息之后将本块写入文件 然后更改 bitmap 记录
+然后开始写入文件 因为文件已经全部都在内存里了 所以直接在该块开头从数据指针中写入 size 大小的文件就可以了。 
+然后在 bitmap中 文件块+1到 文件+1+块数-1 （小于文件+1+块数） 写入 data 块
+如果有的话记下这个文件的块号，并且更新 modified 和 filenames[nfiles] 且 nfiles ++
+现在文件块和文件数据就处理完毕了，记下号码之后 找到父目录块，修改修改时间以及新增一个 entries 然后 nentries++  然后目录块写入文件
+关闭文件并返回 0
+
+
+SIFS_writefile() needs to be provided with the data and length of that data or the new file to 
+be written.  You'd typically allocate memory to store the to-be-saved file entire contents, and 
+provide that to SIFS_writefile().
+
 readfile.c
 fileinfo.c
 rmfile.c
@@ -36,6 +49,9 @@ defrag.c
 之后关闭文件
 
 更新 每次将所有文件提前之后 需要遍历所有的block 找出所有的文件夹块  然后读取所有的 entries 如果 entries 的 block ID 大于等于 FragBegin 那么就要减去 fraglen
+
+lastname.c
+从 mkdir 中拿出来的 用于取得 pathname 中 除了任何前置路径的 真正的文件名（夹）名的功能
 
 更新日志 
 
@@ -71,3 +87,10 @@ Project 2 5.1 2019-10-11 00:04:54
 Project 2 5.2 2019-10-11 01:03:57
 修复了 5.1 的bug 
 并修复了 mkdir 接收同名文件夹 即如果是存在的 还会再创建
+
+Project 2 5.3 2019-10-11 23:15:06
+通过阅读文档得到的一些 bug
+1.  mkdir 新建文件和目录时应该注意 pathname 的长度 加上\0 不可以超过 32 个字符 (已修正)
+2.  mkdir 新建文件和目录应该检查父目录是否可以放下新的 entry (已修正)
+3.  mkdir 新建文件和目录应该检查磁盘是否已满（没有空闲块）(其实我发现并没有这个问题)
+修复了 mkdir 的上述 bug 然后得到了新的 lastname 功能 并且写好了 writefile  暂时还没有测试

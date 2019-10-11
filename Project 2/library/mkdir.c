@@ -35,15 +35,28 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     //  FIND THE PARENTS DIR BLOCK
     int parentBlockID = SIFS_pathmatch(volumename, pathname, SIFS_PATH_PARENT_FOR_NEW);
-    if (parentBlockID==-1) //THE PARENT BLOCK ISN'T EXIST
+    if (parentBlockID == -1) //THE PARENT BLOCK ISN'T EXIST
     {
+        fclose(vol);
         SIFS_errno = SIFS_ENOENT;
         return 1;
     }
     //  CHECK IF THIS DIR ALREADY EXISTS
-    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE)!=-1) //THE PARENT BLOCK ISN'T EXIST
+    if (SIFS_pathmatch(volumename, pathname, SIFS_PATH_THISONE) != -1) //THE PARENT BLOCK ISN'T EXIST
     {
+        fclose(vol);
         SIFS_errno = SIFS_EEXIST;
+        return 1;
+    }
+
+    // CHECK IF THE PARENT DIR IS FULL
+    SIFS_DIRBLOCK parentBlock;
+    fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentBlockID, SEEK_SET);
+    fread(&parentBlock, sizeof parentBlock, 1, vol);
+    if (parentBlock.nentries == SIFS_MAX_ENTRIES)
+    {
+        fclose(vol);
+        SIFS_errno = SIFS_EMAXENTRY;
         return 1;
     }
 
@@ -54,6 +67,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
             break;
     if (index == volHeader.nblocks)
     {
+        fclose(vol);
         SIFS_errno = SIFS_ENOSPC;
         return 1;
     }
@@ -64,24 +78,34 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     //Generate new dir block
     SIFS_DIRBLOCK dir_block;
     memset(&dir_block, 0, sizeof dir_block); // cleared to all zeroes
-    int len = strlen(pathname) - 1;
-    char tempName[SIFS_MAX_NAME_LENGTH];
+    // int len = strlen(pathname) - 1;
+    // char tempName[SIFS_MAX_NAME_LENGTH];
     char newName[SIFS_MAX_NAME_LENGTH];
-    while (pathname[len] == '/') len--;
-    for (int i = len; i >= 0; i--)
+    // while (pathname[len] == '/') len--;
+    // for (int i = len; i >= 0; i--)
+    // {
+    //     if (pathname[i] == '/')
+    //     {
+    //         tempName[len - i] = '\0';
+    //         break;
+    //     }
+    //     tempName[len - i] = pathname[i];
+    // }
+    // tempName[len+1] = '\0';
+    // int newlen = strlen(tempName) - 1;
+    // for (int i = 0; i <= newlen; i++)
+    //     newName[i] = tempName[newlen - i];
+    // newName[newlen+1] = '\0';
+    // newName = SIFS_lastname(pathname);
+    SIFS_lastname(pathname, newName);
+
+    //  CHECK IF THE NEW NAME IS EXCEED MAX LENGTH FOR NAME
+    if (strlen(newName) > (SIFS_MAX_NAME_LENGTH - 1))
     {
-        if (pathname[i] == '/')
-        {
-            tempName[len - i] = '\0';
-            break;
-        }
-        tempName[len - i] = pathname[i];
+        fclose(vol);
+        SIFS_errno = SIFS_EINVAL;
+        return 1;
     }
-    tempName[len+1] = '\0';
-    int newlen = strlen(tempName) - 1;
-    for (int i = 0; i <= newlen; i++)
-        newName[i] = tempName[newlen - i];
-    newName[newlen+1] = '\0';
 
     strcpy(dir_block.name, newName);
     dir_block.modtime = time(NULL);
@@ -89,11 +113,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
 
     //  DONE
 
-    
     // GET THE PARENTS DIR BLOCK
-    SIFS_DIRBLOCK parentBlock;
-    fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * parentBlockID, SEEK_SET);
-    fread(&parentBlock, sizeof parentBlock, 1, vol);
     // ADD THE NEW ENTRIES
     parentBlock.entries[parentBlock.nentries].blockID = index;
     // CHANGE THE MODTIME

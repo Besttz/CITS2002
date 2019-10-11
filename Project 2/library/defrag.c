@@ -122,7 +122,6 @@ int SIFS_defrag(const char *volumename)
             //  WRITE THE BLOCK BACK
             fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
             fwrite(&block, sizeof block, 1, vol);
-
         }
     }
 
