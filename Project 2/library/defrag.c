@@ -105,23 +105,36 @@ int SIFS_defrag(const char *volumename)
             fwrite(oneblock, sizeof oneblock, 1, vol);
 
         //  NOW NEED TO CHANGE ALL THE BLOCK ID OF ENTRIES
-        SIFS_DIRBLOCK block; // TO STORE DIR BLOCK GOING TO BE CHANGED
+        //  ALSO THE ' firstblockID' OF FILE BLOCK
+        SIFS_DIRBLOCK block;   // TO STORE DIR BLOCK GOING TO BE CHANGED
+        SIFS_FILEBLOCK fBlock; // TO STORE FILE BLOCK GOING TO BE CHANGED
 
         for (i = 0; i < volHeader.nblocks; i++)
         {
-            if (bitmap[i] != 'd')
-                continue; // SKIP THE BLOCK NOT DIR
-            //  GET THE BLOCK
-            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
-            fread(&block, sizeof block, 1, vol);
-            if (block.nentries == 0)
-                continue; // SKIP DIR WITH NO ENTRY
-            for (int j = 0; j < block.nentries; j++)
-                if (block.entries[j].blockID > fragBegin)
-                    block.entries[j].blockID -= fragLen;
-            //  WRITE THE BLOCK BACK
-            fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
-            fwrite(&block, sizeof block, 1, vol);
+            if (bitmap[i] == 'd')
+            {
+                //  GET THE BLOCK
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+                fread(&block, sizeof block, 1, vol);
+                if (block.nentries == 0)
+                    continue; // SKIP DIR WITH NO ENTRY
+                for (int j = 0; j < block.nentries; j++)
+                    if (block.entries[j].blockID > fragBegin)
+                        block.entries[j].blockID -= fragLen;
+                //  WRITE THE BLOCK BACK
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+                fwrite(&block, sizeof block, 1, vol);
+            }
+            else if (i >= fragBegin && bitmap[i] == 'f')
+            {
+                //  GET THE BLOCK
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+                fread(&fBlock, sizeof fBlock, 1, vol);
+                fBlock.firstblockID -= fragLen;
+                //  WRITE THE BLOCK BACK
+                fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
+                fwrite(&fBlock, sizeof fBlock, 1, vol);
+            }
         }
     }
 

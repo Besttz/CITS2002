@@ -121,5 +121,8 @@ Writefile 好像是完成了
 Project 2 6.1  2019-10-14 00:11:03
 更新了 Readme 中所有功能的实现描述，并更新了 dirinfo 的顺序以便更快的检查错误。
 完成了 fileinfo 并加入了测试项目
-然后发现了新的 bug 
+然后发现了新的 bug (已修复)
     defrag 向前移动 block 时只是更新了 文件夹的 entries 没有更新 file 中 First block 的信息 导致指针出错
+    
+Project 2 6.2  2019年10月14日00:25:41
+修复了上面 defrag 的 bug 现在只剩下 readfile 和 rmfile 了
