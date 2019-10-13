@@ -32,6 +32,15 @@ int main(int argcount, char *argvalue[])
             exit(EXIT_FAILURE);
         }
     }
+    else if (strcmp(order, "rf") == 0)
+    {
+
+        if (SIFS_rmfile(volumename, pathname) != 0)
+        {
+            SIFS_perror(argvalue[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
     else if (strcmp(order, "dirinfo") == 0)
     {
         printf("Luanch ./sifs_dirinfo! \n");
