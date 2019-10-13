@@ -1,5 +1,10 @@
 #include "sifs-new.h"
 
+/* CITS2002 Project 2 2019
+   Name(s):             Tommy Zhang, Zhenyu Yang
+   Student number(s):   22181467 22374571
+ */
+
 // remove an existing directory from an existing volume
 int SIFS_rmdir(const char *volumename, const char *pathname)
 {
