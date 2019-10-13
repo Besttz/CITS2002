@@ -59,7 +59,7 @@ int main(int argcount, char *argvalue[])
         int size = ftell(vol);
         fseek(vol, 0L, SEEK_SET);
         char dataArea[size];
-        memset(dataArea,0,size);
+        memset(dataArea, 0, size);
         fread(dataArea, size, 1, vol);
 
         if (SIFS_writefile(volumename, argvalue[4], dataArea, size) != 0)
@@ -76,6 +76,18 @@ int main(int argcount, char *argvalue[])
     else if (strcmp(order, "defrag") == 0)
     {
         SIFS_defrag(volumename);
+    }
+    else if (strcmp(order, "fi") == 0)
+    {
+        time_t modtime;
+        size_t length;
+        if (SIFS_fileinfo(volumename, pathname, &length, &modtime) != 0)
+        {
+            SIFS_perror(argvalue[0]);
+            exit(EXIT_FAILURE);
+        }
+        printf("modified %s\n", ctime(&modtime));
+        printf("length: %zu\n", length);
     }
 
     return 0;
