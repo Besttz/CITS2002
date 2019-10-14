@@ -77,6 +77,25 @@ int main(int argcount, char *argvalue[])
             exit(EXIT_FAILURE);
         }
     }
+    else if (strcmp(order, "read") == 0)
+    {
+        time_t modtime;
+        size_t length;
+        if (SIFS_fileinfo(volumename, pathname, &length, &modtime) != 0)
+        {
+            SIFS_perror(argvalue[0]);
+            exit(EXIT_FAILURE);
+        }
+
+        char dataArea[length];
+
+        if (SIFS_readfile(volumename, pathname, (void **)dataArea, &length) != 0)
+        {
+            SIFS_perror(argvalue[0]);
+            exit(EXIT_FAILURE);
+        }
+        printf("%s\n",dataArea);
+    }
     else if (strcmp(order, "pathmatch") == 0)
     {
         printf("Block ID of Parent is : %i \n", SIFS_pathmatch(volumename, pathname, 2));
