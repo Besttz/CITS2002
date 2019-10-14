@@ -27,13 +27,13 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     }
 
     //  FIND THE BLOCK ID OF PATHNAME
-    int blockID = SIFS_pathmatch(volumename, pathname,0);
+    int blockID = SIFS_pathmatch(volumename, pathname, 0);
     if (blockID == -1)
     {
         SIFS_errno = SIFS_ENOENT;
         return 1;
     }
-    
+
     // Read the first header of file.
     SIFS_VOLUME_HEADER volHeader;
     fread(&volHeader, sizeof volHeader, 1, vol);
@@ -41,7 +41,6 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
 
-    
     if (bitmap[blockID] != 'd')
     {
         SIFS_errno = SIFS_ENOTDIR;
@@ -57,7 +56,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     // char ** entryname = (char **)calloc(*nentries,sizeof(char)*SIFS_MAX_NAME_LENGTH);
     if (block.nentries > 0)
     {
-        entryname  = realloc(entryname, block.nentries * sizeof(char)*SIFS_MAX_NAME_LENGTH);
+        entryname = realloc(entryname, block.nentries * sizeof(char) * SIFS_MAX_NAME_LENGTH);
 
         for (int i = 0; i < block.nentries; i++)
         {

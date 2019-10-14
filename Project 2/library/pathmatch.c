@@ -177,13 +177,11 @@ int SIFS_pathmatch(const char *volumename, const char *pathname, int mode)
                 if (strcmp(thisOne, "") == 0)
                     return parent;
                 return currentCheckingBlock;
-            } else
+            }
+            else
             {
                 return -1;
             }
-            
-             
-                
         }
     }
 

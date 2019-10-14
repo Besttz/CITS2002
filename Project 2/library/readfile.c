@@ -50,10 +50,10 @@ int SIFS_readfile(const char *volumename, const char *pathname,
 
     //  GET THIS BLOCK
     // SIFS_FILEBLOCK block;
-    fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * (blockID+1), SEEK_SET);
+    fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * (blockID + 1), SEEK_SET);
     // fread(&block, sizeof block, 1, vol);
-    fread(data,*nbytes,1,vol);
-    
+    fread(data, *nbytes, 1, vol);
+
     //  FINISHED, CLOSE THE VOLUME
     fclose(vol);
 
