@@ -104,7 +104,10 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         //  WRITE THE NEW BLOCKS INTO FILE
         fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * removeID, SEEK_SET);
         for (int i = 0; i <= dataBlockCount; i++)
-            fwrite(&fileBlock, sizeof fileBlock, 1, vol);
+            fwrite(&fileBlock, volHeader.blocksize, 1, vol);
+        //  FINISHED, CLOSE THE VOLUME
+        fclose(vol); // MOVE HERE TO AVIOD FILE BUFFER WRITE INTO FILE AGAIN AFTER defrag
+
         //  FILE DEFRAG
         if (SIFS_defrag(volumename) != 0)
             return 1;
@@ -139,11 +142,10 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
             fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * i, SEEK_SET);
             fwrite(&parentBlock, sizeof parentBlock, 1, vol);
         }
+
+        //  FINISHED, CLOSE THE VOLUME
+        fclose(vol);
     }
-
-    //  FINISHED, CLOSE THE VOLUME
-    fclose(vol);
-
     //  AND RETURN INDICATING SUCCESS
     return 0;
 }
