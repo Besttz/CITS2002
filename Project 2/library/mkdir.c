@@ -78,25 +78,8 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     //Generate new dir block
     SIFS_DIRBLOCK dir_block;
     memset(&dir_block, 0, sizeof dir_block); // cleared to all zeroes
-    // int len = strlen(pathname) - 1;
-    // char tempName[SIFS_MAX_NAME_LENGTH];
+    //  GET THE NAME OF FOLDER
     char newName[SIFS_MAX_NAME_LENGTH];
-    // while (pathname[len] == '/') len--;
-    // for (int i = len; i >= 0; i--)
-    // {
-    //     if (pathname[i] == '/')
-    //     {
-    //         tempName[len - i] = '\0';
-    //         break;
-    //     }
-    //     tempName[len - i] = pathname[i];
-    // }
-    // tempName[len+1] = '\0';
-    // int newlen = strlen(tempName) - 1;
-    // for (int i = 0; i <= newlen; i++)
-    //     newName[i] = tempName[newlen - i];
-    // newName[newlen+1] = '\0';
-    // newName = SIFS_lastname(pathname);
     SIFS_lastname(pathname, newName);
 
     //  CHECK IF THE NEW NAME IS EXCEED MAX LENGTH FOR NAME
@@ -111,7 +94,6 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     dir_block.modtime = time(NULL);
     dir_block.nentries = 0;
 
-    //  DONE
 
     // GET THE PARENTS DIR BLOCK
     // ADD THE NEW ENTRIES

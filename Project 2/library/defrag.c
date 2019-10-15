@@ -32,13 +32,15 @@ int SIFS_defrag(const char *volumename)
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
 
-    while (1)
+    //  Keep cleanning fragment until break
+    while (1) 
     {
         int i = volHeader.nblocks - 1;
         int foundThings = 0;
         int fragBegin = -1;
         int fragEnd = -1;
 
+        //  CHECK ANY FRAGMENGT LEFT
         for (; i >= 0; i--)
         {
             if (foundThings == 0 && bitmap[i] != 'u')

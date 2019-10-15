@@ -40,20 +40,21 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     // Read current bitmap
     SIFS_BIT bitmap[volHeader.nblocks];
     fread(&bitmap, sizeof bitmap, 1, vol);
-
-    if (bitmap[blockID] != 'd')
+    //  CHECK IF THIS IS A DIR
+    if (bitmap[blockID] != SIFS_DIR)
     {
         SIFS_errno = SIFS_ENOTDIR;
         return 1;
     }
 
+    //  GET THIS BLOCK
     SIFS_DIRBLOCK block;
     fseek(vol, sizeof volHeader + sizeof bitmap + volHeader.blocksize * blockID, SEEK_SET);
     fread(&block, sizeof block, 1, vol);
     *nentries = block.nentries;
     *modtime = block.modtime;
     char **entryname = NULL;
-    // char ** entryname = (char **)calloc(*nentries,sizeof(char)*SIFS_MAX_NAME_LENGTH);
+    //  GET ENTRY NAMES
     if (block.nentries > 0)
     {
         entryname = realloc(entryname, block.nentries * sizeof(char) * SIFS_MAX_NAME_LENGTH);
@@ -81,8 +82,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
             }
         }
     }
-    *entrynames = entryname;
-    // memcpy(*entrynames,*entryname,sizeof entryname);
+    *entrynames = entryname; // COPY THE ADDRESS TO THE POINTER
 
     //  FINISHED, CLOSE THE VOLUME
 
