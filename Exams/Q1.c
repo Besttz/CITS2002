@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdbool.h>
-#include <stdio.h> //printf
+#include <stdio.h>  //printf
 #include <stdlib.h> //atoi()
 /* 
 The purpose of the function is to determine 
@@ -104,6 +104,37 @@ int dayOfWeek(int day, int month, int year, int firstJan)
         }
     }
     return -1;
+}
+
+/*
+The function receives two arrays of integers, named set1 and set2,
+whose lengths are provided by parameters len1 and len2, respectively.
+All elements of set1 are guaranteed to be unique,
+but are not necessarily sorted.
+The same is also true of the elements of set2. 
+There is no requirement that len1 and len2 have the same value.
+The goal of the function is to determine if set2 is a non-empty subset of set1.
+*/
+
+bool isSubset(int set1[], int len1, int set2[], int len2)
+{
+
+    if (len2 <= 0)
+        return false;
+    if (len2 > len1)
+        return false;
+        
+    for (int i = 0; i < len2; i++)
+    {
+        int now = set2[i];
+        int j = 0;
+        for (; j < len1; j++)
+            if (set1[j == now])
+                break;
+        if (j == len1)
+            return false;
+    }
+    return true;
 }
 
 int main(int argc, char *argv[])
