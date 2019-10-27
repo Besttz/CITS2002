@@ -123,7 +123,7 @@ bool isSubset(int set1[], int len1, int set2[], int len2)
         return false;
     if (len2 > len1)
         return false;
-        
+
     for (int i = 0; i < len2; i++)
     {
         int now = set2[i];
@@ -135,6 +135,58 @@ bool isSubset(int set1[], int len1, int set2[], int len2)
             return false;
     }
     return true;
+}
+
+/*
+The first parameter, textfilename, provides 
+the name of the text file containing the words. 
+You may assume that the text file contains only alphabetic, 
+punctuation, and whitespace characters. The second parameter, 
+nwords, provides a pointer to an integer. 
+On successful return from the function, 
+the integer pointed to by nwords will contain 
+the number of distinct words found in the file. 
+On successful return, concordance will return a vector of strings, 
+containing the distinct words found in the text file. 
+If any problems are detected during the execution of concordance, 
+the function should return the NULL pointer.
+*/
+char **concordance(char *textfilename, int *nwords)
+{
+    FILE *fp = fopen(textfilename, "r");
+    if (fp == NULL)
+        return NULL;
+    char buffer[10000];
+    int wordsNum = 0;
+    char result[1000][20];
+
+    while (fgets(buffer, sizeof buffer, fp) != NULL)
+    {
+        char *check = buffer;
+        char temp[20];
+        while (*check != '\0')
+        {
+            int i = 0;
+            while ((*check >= 'a' && *check <= 'z') || (*check >= 'A' && *check <= 'Z'))
+            {
+                temp[i] = *check;
+                check++;
+                i++;
+            }
+            temp[i] = '\0';
+
+            //  CHECK IF THIS WORD ALREADY IN RESULT
+            for (i = 0; i < wordsNum; i++)
+                if (strcmp(temp, result[i]) == 0)
+                    break;
+            if (i == wordsNum)
+                strcpy(result[wordsNum++], temp);
+            check++;
+        }
+    }
+
+    *nwords = wordsNum;
+    return result;
 }
 
 int main(int argc, char *argv[])
