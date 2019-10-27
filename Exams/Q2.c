@@ -234,7 +234,30 @@ char *makeChapter(char **sentences, int nSentences)
             *write++ = *read++;
         *write++ = ' ';
     }
+    *write = '\0';
     return chapter;
+}
+
+char **cloneArgv(int argc, char *argv[])
+{
+    char **result = calloc(argc, sizeof(char *));
+    for (int i = 0; i < argc; i++)
+    {
+        result[i] = calloc(100, sizeof(char));
+        char *write = result[i];
+        char *read = argv[i];
+        while (*read != '\0')
+            *write++ = *read++;
+        *write = '\0';
+    }
+    return result;
+}
+
+void freArgv(int argc, char *argv[])
+{
+    for (int i = 0; i < argc; i++)
+        free(argv[i]);
+    free(argv);
 }
 
 int main(int argc, char *argv[])
@@ -277,8 +300,12 @@ int main(int argc, char *argv[])
         char **sen = makeSentences(chapter, &nSen);
         for (int i = 0; i < nSen; i++)
             printf("%i: %s \n", i, sen[i]);
-        char * cha = makeChapter(sen, nSen);
+        char *cha = makeChapter(sen, nSen);
         printf("Chapter: %s \n", cha);
+        char **new = cloneArgv(nSen, sen);
+        for (int i = 0; i < nSen; i++)
+            printf("%i: %s \n", i, new[i]);
+        freArgv(nSen, sen);
     }
     return 0;
 }
