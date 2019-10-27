@@ -30,17 +30,16 @@ typedef struct
 
 char ***make(int row, int column)
 {
-    char ***data = calloc(row * column, sizeof(char *));
+    char ***data = calloc(row, sizeof(char *));
     for (int i = 0; i < row; i++)
     {
+        data[i] = calloc(column, sizeof(char *));
         for (int j = 0; j < column; j++)
         {
             data[i][j] = calloc(1, MAX_SIZE);
         }
     }
-    printf("111 \n");
-
-    return (char ***)data;
+    return data;
 }
 
 int swap(SPREADSHEET sheet, int column1, int column2)
@@ -65,21 +64,174 @@ int freeAll(SPREADSHEET sheet)
             if (sheet.data[i][j] != NULL)
                 free(sheet.data[i][j]);
         }
+        if (sheet.data[i] != NULL)
+            free(sheet.data[i]);
     }
+
     free(sheet.data);
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    SPREADSHEET aaa = {make(1, 1), 1, 1};
-    printf("111 \n");
-    char *new = "Hello";
-    printf("%s \n", new);
-    printf("111 \n");
-    printf("%s \n", **(aaa.data));
-    strcpy(**(aaa.data), new);
-    printf("%s\n", aaa.data[0][0]);
+    SPREADSHEET aaa = {make(2, 2), 2, 2};
+    char *new = "A";
+    strcpy(aaa.data[0][0], new);
+    char *neww = "B";
+    strcpy(aaa.data[0][1], neww);
+    char *newww = "C";
+    char *newwww = "D";
+    strcpy(aaa.data[1][0], newww);
+    strcpy(aaa.data[1][1], newwww);
+    for (int i = 0; i < aaa.row; i++)
+    {
+        for (int j = 0; j < aaa.column; j++)
+        {
+            printf("%s ", aaa.data[i][j]);
+        }
+        printf("\n ");
+    }
+    swap(aaa, 0, 1);
+    printf("\n ");
+    for (int i = 0; i < aaa.row; i++)
+    {
+        for (int j = 0; j < aaa.column; j++)
+        {
+            printf("%s ", aaa.data[i][j]);
+        }
+        printf("\n ");
+    }
+    freeAll(aaa);
 }
 
 //  以上由于未知原因 Segmentation fault: 11 无法执行
+
+/*
+一;一维数组的申请与释放：
+
+例如为一个字符数组分配空间：
+
+char *p = (char *)malloc(m*sizeof(char));
+
+释放空间：
+
+free(p);
+
+二:二维数组的申请与释放：
+
+1：使用二级指针：
+
+char **p = (char *)malloc(m*sizeof(char *));
+
+for(i=0;i<m;i++)
+
+{
+
+      p[i]=(char *)malloc(n*sizeof(char *));
+
+}
+
+释放空间：
+
+for(i-0;i<m;i++)
+
+{
+
+    free(p[i]);
+
+}
+
+free(p);
+
+2:使用数组指针的方式：
+
+char (*p)[3] = (char(*)[3])malloc(sizeof((char)*m*n);
+
+这种方式分配的内存只需要释放一次：
+
+free(p);
+
+三：三维数组的申请与释放：
+
+char ***p=(char* **)malloc(m*sizeof(char**));
+
+for(i=0;i<m:i++)
+
+p[i]=(char **)malloc(n*sizeof(char*));
+
+for(i=0;i<m;i++)
+
+   for(j=0;j<n;j++)
+
+     p[i][j]=(char *)malloc(p*sizeof(char));
+
+释放空间：
+
+for(i=0;i<m;i++)
+
+   for(j=0;j<n;j++)
+
+    free(p[i][j]);
+
+for(i=0;i<m:i++)
+
+free(p[i]);
+
+free(p);
+
+
+
+注意：可以看出分配空间与释放空间都是逐步进行的，但是释放空间的顺序与分配空间的顺序相反。
+————————————————
+版权声明：本文为CSDN博主「xckkcxxck」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/xckkcxxck/article/details/60141365
+*/
+
+/*
+Different applications for processing large text documents 
+(such as a book’s chapter) may sometimes prefer a chapter’s 
+text to be available as a single (long) string and, at other times, 
+prefer the chapter to be available as a sequence of sentences. 
+This question requires you to write two functions to perform the 
+conversion between chapters and sentences. 
+
+Write a function in C99, named makeSentences(), 
+that converts a chapter into a vector of sentences. 
+The function should match the following prototype: 
+The function receives a single string (chapter) that 
+points to the chapter’s text. Assume that all sentences 
+end with a full-stop character (’.’), 
+and that chapter is guaranteed to end with a complete sentence. 
+The function produces 2 values. 
+The function returns all sentences as a dynamically 
+allocated array of dynamically allocated strings. 
+The number of sentences is returned via the function’s 
+second parameter (nSentences). 
+If any call to dynamically allocate memory fails, the function should return NULL.
+*/
+char **makeSentences(char *chapter, int *nSentences)
+{
+
+    return NULL;
+}
+
+/*
+Write a function in C99, named makeChapter(), 
+that converts a vector of sentences into a single 
+string that represents the chapter. 
+The function receives a vector of sentences 
+(as might be produced by makeSentences(), above) 
+and converts the sentences into a single 
+dynamically allocated string holding a whole chapter of sentences. 
+When (re)constructing the chapter, 
+ensure that you add a single space after each complete sentence. 
+If any calls to dynamically allocate memory fail, 
+makeChapter() should return NULL. 
+You should assume that nSentences is always strictly greater than zero, 
+and that sentences contains nSentences elements. 
+Assume also that each string in sentences represents a complete sentence.
+*/
+char *makeChapter(char **sentences, int nSentences)
+{
+    return NULL;
+}
