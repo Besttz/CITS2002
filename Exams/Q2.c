@@ -72,38 +72,6 @@ int freeAll(SPREADSHEET sheet)
     return 0;
 }
 
-int main(int argc, char *argv[])
-{
-    SPREADSHEET aaa = {make(2, 2), 2, 2};
-    char *new = "A";
-    strcpy(aaa.data[0][0], new);
-    char *neww = "B";
-    strcpy(aaa.data[0][1], neww);
-    char *newww = "C";
-    char *newwww = "D";
-    strcpy(aaa.data[1][0], newww);
-    strcpy(aaa.data[1][1], newwww);
-    for (int i = 0; i < aaa.row; i++)
-    {
-        for (int j = 0; j < aaa.column; j++)
-        {
-            printf("%s ", aaa.data[i][j]);
-        }
-        printf("\n ");
-    }
-    swap(aaa, 0, 1);
-    printf("\n ");
-    for (int i = 0; i < aaa.row; i++)
-    {
-        for (int j = 0; j < aaa.column; j++)
-        {
-            printf("%s ", aaa.data[i][j]);
-        }
-        printf("\n ");
-    }
-    freeAll(aaa);
-}
-
 //  以上由于未知原因 Segmentation fault: 11 无法执行
 
 /*
@@ -197,7 +165,6 @@ conversion between chapters and sentences.
 
 Write a function in C99, named makeSentences(), 
 that converts a chapter into a vector of sentences. 
-The function should match the following prototype: 
 The function receives a single string (chapter) that 
 points to the chapter’s text. Assume that all sentences 
 end with a full-stop character (’.’), 
@@ -209,10 +176,35 @@ The number of sentences is returned via the function’s
 second parameter (nSentences). 
 If any call to dynamically allocate memory fails, the function should return NULL.
 */
+
+#define MAX_SENTENCES 1000
 char **makeSentences(char *chapter, int *nSentences)
 {
+    int nSen = 0;
+    char *check = chapter;
+    while (*check != '\0')
+        if (*check++ == '.')
+            nSen++;
+    check = chapter;
 
-    return NULL;
+    char **sentences = calloc(nSen, sizeof(char *));
+    if (sentences == NULL)
+        return NULL;
+
+    for (int i = 0; i < nSen; i++)
+    {
+        sentences[i] = calloc(1, MAX_SIZE * sizeof(char));
+        if (sentences[i] == NULL)
+            return NULL;
+        char *write = sentences[i];
+        while (*check != '.')
+            *write++ = *check++;
+        check++;
+        *write++ = '.';
+        *write = '\0';
+    }
+    *nSentences = nSen;
+    return sentences;
 }
 
 /*
@@ -234,4 +226,51 @@ Assume also that each string in sentences represents a complete sentence.
 char *makeChapter(char **sentences, int nSentences)
 {
     return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+    if (strcmp("1", argv[1]) == 0)
+    {
+        SPREADSHEET aaa = {make(2, 2), 2, 2};
+        char *new = "A";
+        strcpy(aaa.data[0][0], new);
+        char *neww = "B";
+        strcpy(aaa.data[0][1], neww);
+        char *newww = "C";
+        char *newwww = "D";
+        strcpy(aaa.data[1][0], newww);
+        strcpy(aaa.data[1][1], newwww);
+        for (int i = 0; i < aaa.row; i++)
+        {
+            for (int j = 0; j < aaa.column; j++)
+            {
+                printf("%s ", aaa.data[i][j]);
+            }
+            printf("\n ");
+        }
+        swap(aaa, 0, 1);
+        printf("\n ");
+        for (int i = 0; i < aaa.row; i++)
+        {
+            for (int j = 0; j < aaa.column; j++)
+            {
+                printf("%s ", aaa.data[i][j]);
+            }
+            printf("\n ");
+        }
+        freeAll(aaa);
+    }
+    else if (strcmp("2", argv[1]) == 0)
+    {
+        char chapter[] = "Hello. This is Tommy. Blah Blah Blah. Haha. 你这个笨笨. 笨笨杨振誉.";
+        int nSen = 0;
+        char** sen = makeSentences(chapter,&nSen);
+        for (int i = 0; i < nSen; i++)
+        {
+            printf("%i: %s \n",i,sen[i]);
+        }
+        
+    }
+    return 0;
 }
