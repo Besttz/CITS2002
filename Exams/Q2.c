@@ -225,7 +225,16 @@ Assume also that each string in sentences represents a complete sentence.
 */
 char *makeChapter(char **sentences, int nSentences)
 {
-    return NULL;
+    char *chapter = calloc(nSentences, MAX_SENTENCES);
+    char *write = chapter;
+    for (int i = 0; i < nSentences; i++)
+    {
+        char *read = sentences[i];
+        while (*read != '\0')
+            *write++ = *read++;
+        *write++ = ' ';
+    }
+    return chapter;
 }
 
 int main(int argc, char *argv[])
@@ -265,12 +274,11 @@ int main(int argc, char *argv[])
     {
         char chapter[] = "Hello. This is Tommy. Blah Blah Blah. Haha. 你这个笨笨. 笨笨杨振誉.";
         int nSen = 0;
-        char** sen = makeSentences(chapter,&nSen);
+        char **sen = makeSentences(chapter, &nSen);
         for (int i = 0; i < nSen; i++)
-        {
-            printf("%i: %s \n",i,sen[i]);
-        }
-        
+            printf("%i: %s \n", i, sen[i]);
+        char * cha = makeChapter(sen, nSen);
+        printf("Chapter: %s \n", cha);
     }
     return 0;
 }
