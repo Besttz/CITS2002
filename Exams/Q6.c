@@ -204,7 +204,6 @@ int main(int argc, char *argv[])
 {
 
     // removeDirectory("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a");
-
     // int nD = 0;
     // int nF = 0;
     // countEntries("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a", &nF, &nD);
