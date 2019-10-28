@@ -7,6 +7,8 @@
 
 #include <stdio.h> // sprintf
 
+#include <string.h> // String
+
 /*
 Consider the following operating system dependent system-calls: 
 int unlink(char *filename);
@@ -35,22 +37,30 @@ int removeDirectory(char *directoryname)
     //  TRY TO OPEN THE FIR
     dirp = opendir(directoryname);
     //  CHECK IF OPEN SUCCESSFULLY
+    // printf("38\n");
     if (dirp == NULL)
         return -1;
     //  FOR ALL ITS ENTRIES
     char fullpath[MAXPATHLEN];
+    // printf("OPEN DIR SUCCESSFULLY\n");
     while ((dp = readdir(dirp)) != NULL)
     {
         struct stat stat_buffer;
         struct stat *pointer = &stat_buffer;
 
         sprintf(fullpath, "%s/%s", directoryname, dp->d_name);
+        printf("fullpath: %s\n", fullpath);
         if (stat(fullpath, pointer) != 0)
         {
             EXIT_FAILURE;
         }
         else if (S_ISDIR(pointer->st_mode))
         {
+            if (strcmp(dp->d_name, ".") == 0)
+                continue;
+            if (strcmp(dp->d_name, "..") == 0)
+                continue;
+
             if (removeDirectory(fullpath) != 0)
                 return 1;
         }
