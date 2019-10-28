@@ -49,7 +49,7 @@ int removeDirectory(char *directoryname)
         struct stat *pointer = &stat_buffer;
 
         sprintf(fullpath, "%s/%s", directoryname, dp->d_name);
-        printf("fullpath: %s\n", fullpath);
+        // printf("fullpath: %s\n", fullpath);
         if (stat(fullpath, pointer) != 0)
         {
             EXIT_FAILURE;
@@ -78,9 +78,99 @@ int removeDirectory(char *directoryname)
     return 0;
 }
 
+/*
+The parameter named dirName points to a character string, 
+providing the name of a directory to be recursively explored 
+for files and subdirectories. 
+
+You may assume that dirName, and its subdirectories, 
+contain only files and directories. 
+After countEntries() has explored everything below the named directory, 
+the parameters nFiles and nDirs should provide, to the calling function, 
+the number of files and directories found, respectively. 
+
+If countEntries() finds a directory that cannot be opened, 
+it should report an error and continue its processing 
+(i.e. the function should not exit on such an error). 
+*/
+
+void countEntries(char *dirName, int *nFiles, int *nDirs)
+{
+    DIR *dirp;
+    struct dirent *dp;
+
+    *nFiles = 0;
+    *nDirs = 0;
+
+    dirp = opendir(dirName);
+    if (dirp == NULL)
+    {
+        //REPORT ERROR
+    }
+    else
+    {
+        struct stat stat_buffer;
+        struct stat *pointer = &stat_buffer;
+        char fullpath[MAXPATHLEN];
+
+        while ((dp = readdir(dirp)) != NULL)
+        {
+            sprintf(fullpath, "%s/%s", dirName, dp->d_name);
+            if (stat(fullpath, pointer) != 0)
+                break;
+            if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+                continue;
+            if (S_ISDIR(pointer->st_mode))
+            {
+
+                int nD = 0;
+                int nF = 0;
+                countEntries(fullpath, &nF, &nD);
+                *nFiles += nF;
+                *nDirs += nD + 1;
+            }
+            else if (S_ISREG(pointer->st_mode))
+            {
+                *nFiles += 1;
+            }
+        }
+        closedir(dirp);
+    }
+}
+
+/*
+Consider a hierarchical file-system consisting of directories, 
+each of which possibly contains files and other sub-directories. 
+There are no other types of file-system objects in this file- system.
+
+When wishing to perform an incremental backup of all files in and below 
+a named directory of the file-system, 
+we require knowledge of how much space will be required to copy all files. 
+However, for an incremental backup, we don’t wish to copy all files, 
+but only the files that have been modified since a certain time. 
+
+Write a C99 function to return the number of bytes contained 
+in all files below a named directory 
+that have been modified since an indicated time.
+
+Any errors resulting from conditions such as being unable 
+to access a sub-directory or a file should simply be ignored.
+If directoryname can not be opened as a directory, 
+your function should return -1.
+*/
+
+int totalBytes(char *directoryname, time_t since)
+{
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
 
-    removeDirectory("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a");
+    // removeDirectory("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a");
+    int nD = 0;
+    int nF = 0;
+    countEntries("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a", &nF, &nD);
+    printf("nF:%i, nD: %i \n", nF, nD);
     return 0;
 }
