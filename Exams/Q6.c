@@ -161,16 +161,55 @@ your function should return -1.
 
 int totalBytes(char *directoryname, time_t since)
 {
-    return 0;
+    DIR *dirp;
+    struct dirent *dp;
+    int result = 0;
+
+    dirp = opendir(directoryname);
+    if (dirp == NULL)
+        return -1;
+    else
+    {
+        while ((dp = readdir(dirp)) != NULL)
+        {
+            struct stat stat_buffer;
+            struct stat *pointer = &stat_buffer;
+            char fullpath[MAXPATHLEN];
+
+            if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+                continue;
+            // sprintf(fullpath, "%s/%s", directoryname, dp->d_name);
+            if (stat(fullpath, pointer) != 0)
+                continue;
+            printf("fullpath: %s\n", fullpath);
+
+            if (S_ISDIR(pointer->st_mode))
+            {
+                int size = totalBytes(fullpath, since);
+                if (size != -1)
+                    result += size;
+            }
+            else if (S_ISREG(pointer->st_mode))
+            {
+                if (pointer->st_mtimespec.tv_sec > since)
+                    result += pointer->st_size;
+            }
+        }
+        closedir(dirp);
+    }
+    return result;
 }
 
 int main(int argc, char *argv[])
 {
 
     // removeDirectory("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a");
-    int nD = 0;
-    int nF = 0;
-    countEntries("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a", &nF, &nD);
-    printf("nF:%i, nD: %i \n", nF, nD);
+
+    // int nD = 0;
+    // int nF = 0;
+    // countEntries("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a", &nF, &nD);
+    // printf("nF:%i, nD: %i \n", nF, nD);
+    printf("Size: %i \n", totalBytes("/Users/Tommy/UWA/CITS2002/CITS2002/Exams/a", 0));
+
     return 0;
 }
