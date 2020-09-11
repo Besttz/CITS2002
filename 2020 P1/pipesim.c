@@ -308,6 +308,12 @@ void execute()
         break;
     case 2:
         timetaken += 5;
+        // Check if any process waiting
+        if (exitEvent[currentProcess] != 0)
+        {
+            writeQ(exitEvent[currentProcess]);
+        }
+
         break;
     case 3:
         childPid = ++numProcess;
@@ -318,7 +324,8 @@ void execute()
 
         break;
     case 4:
-        /* code */
+        timetaken += 10;
+        eventWindow[currentProcess]++;
         break;
     default:
         break;
@@ -335,6 +342,12 @@ int main(int argcount, char *argvalue[])
     TQ = 0;
     fileName = argvalue[1];
     TQ = atoi(argvalue[2]);
+
+    for (size_t i = 0; i < MAX_PROCESSES; i++)
+    {
+        exitEvent[i] = 0;
+    }
+
     // Parse File
     parse_eventfile(argvalue[0], fileName);
 
