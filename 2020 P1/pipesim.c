@@ -35,7 +35,7 @@
 
 //  THIS IS DATA STRUCTURE FOR ARGUMENT
 // char fileName[MAX_PROCESSES];                          // Argument1
-int TQ;                                 //Argument2
+int TQ; //Argument2
 // int PipeSize; //Argument3
 
 //  ---------------------------------------------------------------------
@@ -50,6 +50,7 @@ int eventTail[MAX_PROCESSES];                                   // The tail of t
 int exitEvent[MAX_PROCESSES];                                   // The process ID waiting for this child process
 int timetaken = 0;                                              // Total time
 int running = 1;
+int first = 1;
 
 //  ---------------------------------------------------------------------
 
@@ -264,30 +265,40 @@ void writeQ(int pid)
 //  ---------------------------------------------------------------------
 void execute()
 {
-    int currentProcess = readQ();
-    if (currentProcess == -1)
+    int currentProcess;
+    if (first)
     {
-        running = 0;
-        return;
+        currentProcess = 1;
+        first = 0;
+    }
+    else
+    {
+        currentProcess = readQ();
+        if (currentProcess == -1)
+        {
+            running = 0;
+            return;
+        }
+        timetaken += 5;
     }
 
-    
     int win = eventWindow[currentProcess];
     switch (eventType[currentProcess][win])
     {
     case 0:
-        timetaken += 5;
+        // timetaken += 5;
         if (eventTime[currentProcess][win] <= TQ)
         {
-            timetaken  += eventTime[currentProcess][win];
+            timetaken += eventTime[currentProcess][win];
+            eventWindow[currentProcess]++;
         }
         else if (eventTime[currentProcess][win] > TQ)
         {
             timetaken += TQ;
             eventTime[currentProcess][win] -= TQ;
-            writeQ(currentProcess);
         }
-        
+        writeQ(currentProcess);
+        timetaken += 5;
 
         break;
     case 1:
@@ -317,7 +328,6 @@ int main(int argcount, char *argvalue[])
     TQ = 0;
     fileName = argvalue[1];
     TQ = atoi(argvalue[2]);
-
     // Parse File
     parse_eventfile(argvalue[0], fileName);
 
@@ -325,13 +335,11 @@ int main(int argcount, char *argvalue[])
 
     // Simulate
     // queue[0] = 1;
-    writeQ(1);
+    // writeQ(1);
     while (running)
     {
-       execute();
+        execute();
     }
-    
-    
 
     printf("timetaken %i\n", timetaken);
     return 0;
