@@ -168,40 +168,60 @@ void parse_eventfile(char program[], char eventfile[])
             eventTail[thisPID] ++;
             
         }
-        // if eventtype == [0] eventtime =
+        
         else if (nwords == 3 && strcmp(words[1], "sleep") == 0)
         {
             usecs = check_microseconds(words[2], lc);
+            eventType[thisPID][eventTail[thisPID]] = 1;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
-        // if eventtype == [1] eventtime =
+      
         else if (nwords == 2 && strcmp(words[1], "exit") == 0)
         {
-            ;
+            eventType[thisPID][eventTail[thisPID]] = 2;
+            // eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
-        // if eventtype == [3] eventtime [eventnum] = 5
+        
         else if (nwords == 3 && strcmp(words[1], "fork") == 0)
         {
-            otherPID = check_PID(words[2], lc)
+            otherPID = check_PID(words[2], lc);
+            eventType[thisPID][eventTail[thisPID]] = 3;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
-        // if eventtype == [4] eventtime [eventnum] =
+        
         else if (nwords == 3 && strcmp(words[1], "wait") == 0)
         {
             otherPID = check_PID(words[2], lc);
+            eventType[thisPID][eventTail[thisPID]] = 4;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
-        // if eventtype == [5] eventtime =
+        
         else if (nwords == 3 && strcmp(words[1], "pipe") == 0)
         {
             pipedesc = check_descriptor(words[2], lc);
+            eventType[thisPID][eventTail[thisPID]] = 5;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
         else if (nwords == 4 && strcmp(words[1], "writepipe") == 0)
         {
             pipedesc = check_descriptor(words[2], lc);
             nbytes = check_bytes(words[3], lc);
+            eventType[thisPID][eventTail[thisPID]] = 6;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
         else if (nwords == 4 && strcmp(words[1], "readpipe") == 0)
         {
             pipedesc = check_descriptor(words[2], lc);
             nbytes = check_bytes(words[3], lc);
+            eventType[thisPID][eventTail[thisPID]] = 7;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
         }
         //  UNRECOGNISED LINE
         else
