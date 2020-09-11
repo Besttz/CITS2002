@@ -34,9 +34,9 @@
 //  YOUR DATA STRUCTURES, VARIABLES, AND FUNCTIONS SHOULD BE ADDED HERE:
 
 //  THIS IS DATA STRUCTURE FOR ARGUMENT
-char FileName[MAX_PROCESSES];                          // Argument1
-int TQ[MAX_PROCESSES];                                 //Argument2
-int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
+// char fileName[MAX_PROCESSES];                          // Argument1
+// int TQ[MAX_PROCESSES];                                 //Argument2
+// int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
 
 //  ---------------------------------------------------------------------
 
@@ -45,9 +45,9 @@ int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
 // int EventPID[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS];  // The PID of event
 int eventType[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS];         // The type of event
 int eventTime[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS]; //The duation of event
-int eventWindow[MAX_PROCESSES]; // The window of the event
-int eventTail[MAX_PROCESSES]; // The tail of the event
-int exitEvent[MAX_PROCESSES]; // The process ID waiting for this child process
+int eventWindow[MAX_PROCESSES];                                 // The window of the event
+int eventTail[MAX_PROCESSES];                                   // The tail of the event
+int exitEvent[MAX_PROCESSES];                                   // The process ID waiting for this child process
 int timetaken = 0;                                              // Total time
 
 //  ---------------------------------------------------------------------
@@ -143,9 +143,9 @@ void parse_eventfile(char program[], char eventfile[])
 
         //  ENSURE THAT THIS LINE'S PID IS VALID
         int thisPID = check_PID(words[0], lc);
-            //  OTHER VALUES ON (SOME) LINES
-            int otherPID,
-            nbytes, usecs, pipedesc;
+        //  OTHER VALUES ON (SOME) LINES
+        int otherPID, usecs;
+        // int nbytes, usecs, pipedesc;
 
         //  IDENTIFY LINES RECORDING SYSTEM-CALLS AND THEIR OTHER VALUES
         //  THIS FUNCTION ONLY CHECKS INPUT;  YOU WILL NEED TO STORE THE VALUES
@@ -154,41 +154,40 @@ void parse_eventfile(char program[], char eventfile[])
             usecs = check_microseconds(words[2], lc);
             eventType[thisPID][eventTail[thisPID]] = 0;
             eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
-            eventTail[thisPID] ++;
-            
+            eventTail[thisPID]++;
         }
-        
+
         else if (nwords == 3 && strcmp(words[1], "sleep") == 0)
         {
             usecs = check_microseconds(words[2], lc);
             eventType[thisPID][eventTail[thisPID]] = 1;
             eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
-            eventTail[thisPID] ++;
+            eventTail[thisPID]++;
         }
-      
+
         else if (nwords == 2 && strcmp(words[1], "exit") == 0)
         {
             eventType[thisPID][eventTail[thisPID]] = 2;
             // eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
-            eventTail[thisPID] ++;
+            eventTail[thisPID]++;
         }
-        
+
         else if (nwords == 3 && strcmp(words[1], "fork") == 0)
         {
             otherPID = check_PID(words[2], lc);
             eventType[thisPID][eventTail[thisPID]] = 3;
             eventTime[thisPID][eventTail[thisPID]] = otherPID;
-            eventTail[thisPID] ++;
+            eventTail[thisPID]++;
         }
-        
+
         else if (nwords == 3 && strcmp(words[1], "wait") == 0)
         {
             otherPID = check_PID(words[2], lc);
             eventType[thisPID][eventTail[thisPID]] = 4;
             exitEvent[otherPID] = thisPID;
-            eventTail[thisPID] ++;
+            eventTail[thisPID]++;
         }
-        
+
         else if (nwords == 3 && strcmp(words[1], "pipe") == 0)
         {
             // pipedesc = check_descriptor(words[2], lc);
@@ -234,7 +233,7 @@ int tail = 0;
 int readQ()
 {
     int result = queue[window];
-    if (window = 49)
+    if (window == 49)
     {
         window = 0;
     }
@@ -244,10 +243,10 @@ int readQ()
     }
     return result;
 }
-writeQ(int pid)
+void writeQ(int pid)
 {
     queue[tail] = pid;
-    if (tail = 49)
+    if (tail == 49)
     {
         tail = 0;
     }
@@ -262,11 +261,16 @@ writeQ(int pid)
 
 int main(int argcount, char *argvalue[])
 {
-    char FileName[];
-    int  TQ = 0, PipeSize = 0;
-    if (argcount == 3)
-        FileName = argvalue[1];
+    char *fileName = "";
+    int TQ = 0, PipeSize = 0;
+    fileName = argvalue[1];
     TQ = atoi(argvalue[2]);
     PipeSize = atoi(argvalue[3]);
+
+    // Parse File
+    parse_eventfile(argvalue[0],fileName);
+
+    return 0;
+
 
 }
