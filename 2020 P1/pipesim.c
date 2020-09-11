@@ -43,8 +43,10 @@ int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
 // THIS IS DATA STRUCTURE FOR PROCESSES
 // int EventNum[MAX_PROCESSES];                                    // The total number of event of a process
 // int EventPID[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS];  // The PID of event
-int EventType[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS];         // The type of event
-int EventTime[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS]; //The duation of event
+int eventType[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS];         // The type of event
+int eventTime[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS]; //The duation of event
+int eventWindow[MAX_PROCESSES]; // The window of the event
+int eventTail[MAX_PROCESSES]; // The tail of the event
 int timetaken = 0;                                              // Total time
 
 //  ---------------------------------------------------------------------
@@ -55,7 +57,7 @@ int main(int argcount, char *argvalue[])
     int FileName = 0, TQ = 0, PipeSize = 0;
     if (argcount == 3)
         FileName = atoi(argvalue[1]);
-    TQ = atoi(argcalue[2]);
+    TQ = atoi(argvalue[2]);
     PipeSize = atoi(argvalue[3]);
 }
 
