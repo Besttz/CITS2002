@@ -51,6 +51,7 @@ int exitEvent[MAX_PROCESSES];                                   // The process I
 int timetaken = 0;                                              // Total time
 int running = 1;
 int first = 1;
+int numProcess = 1;
 
 //  ---------------------------------------------------------------------
 
@@ -283,6 +284,7 @@ void execute()
     }
 
     int win = eventWindow[currentProcess];
+    int childPid;
     switch (eventType[currentProcess][win])
     {
     case 0:
@@ -308,7 +310,12 @@ void execute()
         timetaken += 5;
         break;
     case 3:
-        /* code */
+        childPid = ++numProcess;
+        writeQ(childPid);
+        writeQ(currentProcess);
+        timetaken += 10;
+        eventWindow[currentProcess]++;
+
         break;
     case 4:
         /* code */
