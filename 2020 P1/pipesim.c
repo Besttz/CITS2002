@@ -177,7 +177,7 @@ void parse_eventfile(char program[], char eventfile[])
         {
             otherPID = check_PID(words[2], lc);
             eventType[thisPID][eventTail[thisPID]] = 3;
-            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTime[thisPID][eventTail[thisPID]] = otherPID;
             eventTail[thisPID] ++;
         }
         
@@ -259,20 +259,14 @@ writeQ(int pid)
 //  ---------------------------------------------------------------------
 
 //  CHECK THE COMMAND-LINE ARGUMENTS, CALL parse_eventfile(), RUN SIMULATION
-int main(int argc, char *argv[])
-{
-    printf("timetaken %i\n", timetaken);
-    return 0;
-}
 
-//  ---------------------------------------------------------------------
-
-// Read arguments
 int main(int argcount, char *argvalue[])
 {
-    int FileName = 0, TQ = 0, PipeSize = 0;
+    char FileName[];
+    int  TQ = 0, PipeSize = 0;
     if (argcount == 3)
-        FileName = atoi(argvalue[1]);
+        FileName = argvalue[1];
     TQ = atoi(argvalue[2]);
     PipeSize = atoi(argvalue[3]);
+
 }
