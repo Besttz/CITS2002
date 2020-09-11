@@ -52,18 +52,6 @@ int timetaken = 0;                                              // Total time
 
 //  ---------------------------------------------------------------------
 
-// Read arguments
-int main(int argcount, char *argvalue[])
-{
-    int FileName = 0, TQ = 0, PipeSize = 0;
-    if (argcount == 3)
-        FileName = atoi(argvalue[1]);
-    TQ = atoi(argvalue[2]);
-    PipeSize = atoi(argvalue[3]);
-}
-
-//  ---------------------------------------------------------------------
-
 //  FUNCTIONS TO VALIDATE FIELDS IN EACH eventfile - NO NEED TO MODIFY
 int check_PID(char word[], int lc)
 {
@@ -275,4 +263,16 @@ int main(int argc, char *argv[])
 {
     printf("timetaken %i\n", timetaken);
     return 0;
+}
+
+//  ---------------------------------------------------------------------
+
+// Read arguments
+int main(int argcount, char *argvalue[])
+{
+    int FileName = 0, TQ = 0, PipeSize = 0;
+    if (argcount == 3)
+        FileName = atoi(argvalue[1]);
+    TQ = atoi(argvalue[2]);
+    PipeSize = atoi(argvalue[3]);
 }
