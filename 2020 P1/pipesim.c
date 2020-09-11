@@ -8,6 +8,12 @@
     Student number(s):   22384028
  */
 
+/* TO DO LIST
+1. Make a queue of process
+2. Store the event(system-call) of every process
+
+
+*/
 
 //  MAXIMUM NUMBER OF PROCESSES OUR SYSTEM SUPPORTS (PID=1..20)
 #define MAX_PROCESSES                       20
