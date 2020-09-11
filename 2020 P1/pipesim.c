@@ -28,13 +28,35 @@
 //  ---------------------------------------------------------------------
 
 //  YOUR DATA STRUCTURES, VARIABLES, AND FUNCTIONS SHOULD BE ADDED HERE:
-int main ()
+
+//  THIS IS DATA STRUCTURE FOR ARGUMENT
+char FileName[MAX_PROCESSES]; // Argument1
+int TQ[MAX_PROCESSES]; //Argument2
+int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
+
+//  ---------------------------------------------------------------------
+
+// THIS IS DATA STRUCTURE FOR PROCESSES 
+int EventNum[MAX_PROCESSES]; // The total number of event of a process
+int EventPID[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS]; // The PID of event
+int EventType[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; // The type of event
+int EventTime[MAX_PROCESSES][MAX_PIPE_DESCRIPTORS_PER_PROCESS]; //The duation of event
+int timetaken       = 0; // Total time
+
+//  ---------------------------------------------------------------------
+
+// Read arguments
+int main(int argcount, char *argvalue[])
 {
-    
+    int  FileName = 0, TQ = 0, PipeSize = 0;
+    if(argcount == 3) 
+        FileName = atoi(argvalue[1]);
+        TQ       = atoi(argcalue[2]);
+        PipeSize = atoi(argvalue[3]);
 }
-int timetaken       = 0;
 
 
+    
 
 //  ---------------------------------------------------------------------
 
@@ -114,7 +136,6 @@ void parse_eventfile(char program[], char eventfile[])
 //  ATTEMPT TO BREAK EACH LINE INTO A NUMBER OF WORDS, USING sscanf()
         int nwords = sscanf(line, "%19s %19s %19s %19s",
                                     words[0], words[1], words[2], words[3]);
-
 //  WE WILL SIMPLY IGNORE ANY LINE WITHOUT ANY WORDS
         if(nwords <= 0) {
             continue;
@@ -122,7 +143,7 @@ void parse_eventfile(char program[], char eventfile[])
 
 //  ENSURE THAT THIS LINE'S PID IS VALID
         int thisPID = check_PID(words[0], lc);
-
+        EventNum 
 //  OTHER VALUES ON (SOME) LINES
         int otherPID, nbytes, usecs, pipedesc;
 
@@ -131,18 +152,23 @@ void parse_eventfile(char program[], char eventfile[])
         if(nwords == 3 && strcmp(words[1], "compute") == 0) {
             usecs   = check_microseconds(words[2], lc);
         }
+        // if eventtype == [0] eventtime =
         else if(nwords == 3 && strcmp(words[1], "sleep") == 0) {
             usecs   = check_microseconds(words[2], lc);
         }
+        // if eventtype == [1] eventtime =
         else if(nwords == 2 && strcmp(words[1], "exit") == 0) {
             ;
         }
+        // if eventtype == [3] eventtime [eventnum] = 5
         else if(nwords == 3 && strcmp(words[1], "fork") == 0) {
-            otherPID = check_PID(words[2], lc);
+            otherPID = check_PID(words[2], lc)
         }
+        // if eventtype == [4] eventtime [eventnum] = 
         else if(nwords == 3 && strcmp(words[1], "wait") == 0) {
             otherPID = check_PID(words[2], lc);
         }
+        // if eventtype == [5] eventtime =
         else if(nwords == 3 && strcmp(words[1], "pipe") == 0) {
             pipedesc = check_descriptor(words[2], lc);
         }
