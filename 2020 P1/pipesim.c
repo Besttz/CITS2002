@@ -35,8 +35,8 @@
 
 //  THIS IS DATA STRUCTURE FOR ARGUMENT
 // char fileName[MAX_PROCESSES];                          // Argument1
-// int TQ[MAX_PROCESSES];                                 //Argument2
-// int PipeSize[MAX_PROCESSES][MAX_SYSCALLS_PER_PROCESS]; //Argument3
+int TQ;                                 //Argument2
+// int PipeSize; //Argument3
 
 //  ---------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ int eventWindow[MAX_PROCESSES];                                 // The window of
 int eventTail[MAX_PROCESSES];                                   // The tail of the event
 int exitEvent[MAX_PROCESSES];                                   // The process ID waiting for this child process
 int timetaken = 0;                                              // Total time
+int running = 1;
 
 //  ---------------------------------------------------------------------
 
@@ -232,6 +233,11 @@ int tail = 0;
 
 int readQ()
 {
+    if (window >= tail || (tail == 49 && window == 0))
+    {
+        return -1;
+    }
+
     int result = queue[window];
     if (window == 49)
     {
@@ -256,21 +262,77 @@ void writeQ(int pid)
     }
 }
 //  ---------------------------------------------------------------------
+void execute()
+{
+    int currentProcess = readQ();
+    if (currentProcess == -1)
+    {
+        running = 0;
+        return;
+    }
+
+    
+    int win = eventWindow[currentProcess];
+    switch (eventType[currentProcess][win])
+    {
+    case 0:
+        timetaken += 5;
+        if (eventTime[currentProcess][win] <= TQ)
+        {
+            timetaken  += eventTime[currentProcess][win];
+        }
+        else if (eventTime[currentProcess][win] > TQ)
+        {
+            timetaken += TQ;
+            eventTime[currentProcess][win] -= TQ;
+            writeQ(currentProcess);
+        }
+        
+
+        break;
+    case 1:
+        /* code */
+        break;
+    case 2:
+        timetaken += 5;
+        break;
+    case 3:
+        /* code */
+        break;
+    case 4:
+        /* code */
+        break;
+    default:
+        break;
+    }
+}
+
+//  ---------------------------------------------------------------------
 
 //  CHECK THE COMMAND-LINE ARGUMENTS, CALL parse_eventfile(), RUN SIMULATION
 
 int main(int argcount, char *argvalue[])
 {
     char *fileName = "";
-    int TQ = 0, PipeSize = 0;
+    TQ = 0;
     fileName = argvalue[1];
     TQ = atoi(argvalue[2]);
-    PipeSize = atoi(argvalue[3]);
 
     // Parse File
-    parse_eventfile(argvalue[0],fileName);
+    parse_eventfile(argvalue[0], fileName);
 
+    timetaken = 0;
+
+    // Simulate
+    // queue[0] = 1;
+    writeQ(1);
+    while (running)
+    {
+       execute();
+    }
+    
+    
+
+    printf("timetaken %i\n", timetaken);
     return 0;
-
-
 }
