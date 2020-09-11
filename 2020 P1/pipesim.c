@@ -163,6 +163,9 @@ void parse_eventfile(char program[], char eventfile[])
         if (nwords == 3 && strcmp(words[1], "compute") == 0)
         {
             usecs = check_microseconds(words[2], lc);
+            eventType[thisPID][eventTail[thisPID]] = 0;
+            eventTime[thisPID][eventTail[thisPID]] = atoi(words[2]);
+            eventTail[thisPID] ++;
             
         }
         // if eventtype == [0] eventtime =
